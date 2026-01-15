@@ -1,81 +1,87 @@
-.card {
-  border: 2px solid #2196f3;
+.zmanim-card {
+  max-width: 520px;
+  margin: 40px auto;
+  padding: 28px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.zmanim-card h2 {
+  margin-bottom: 20px;
+  font-size: 1.6rem;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.input-row input {
+  flex: 1;
+  padding: 12px 14px;
   border-radius: 12px;
-  padding: 20px;
-  margin: 15px 0;
-  background: linear-gradient(135deg, #e3f2fd, #f9fcff);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #ddd;
+  font-size: 1rem;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+.input-row input:focus {
+  outline: none;
+  border-color: #673ab7;
 }
 
-.card h2 {
-  margin-bottom: 15px;
-  color: #0d47a1;
-}
-
-/* Inputs */
-.card input {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  margin-right: 10px;
-  font-size: 14px;
-}
-
-.card button {
-  padding: 8px 16px;
-  border-radius: 6px;
+.input-row button {
+  padding: 12px 18px;
+  border-radius: 12px;
   border: none;
-  background-color: #2196f3;
+  background: linear-gradient(135deg, #673ab7, #512da8);
   color: white;
-  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.card button:disabled {
-  background-color: #90caf9;
-  cursor: not-allowed;
+.input-row button:hover {
+  opacity: 0.9;
 }
 
-.card button:hover:not(:disabled) {
-  background-color: #1976d2;
+.status {
+  color: #666;
 }
 
-/* Weather details */
-.card .details {
-  margin-top: 20px;
-  text-align: left;
-}
-
-.card .details p {
-  margin: 6px 0;
-}
-
-/* Error message */
-.card .error {
+.error {
   color: #d32f2f;
-  margin-top: 10px;
-  font-weight: bold;
 }
 
-/* Spinner */
-.spinner {
-  margin: 15px auto;
-  width: 40px;
-  height: 40px;
-  border: 4px solid #bbdefb;
-  border-top: 4px solid #1976d2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.location {
+  margin: 24px 0 12px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.location h3 {
+  margin: 0;
+}
+
+.location span {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.zmanim-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.z-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f7f7fb;
+  font-size: 0.95rem;
+}
+
+.z-row.highlight {
+  background: #ede7f6;
+  font-weight: 700;
 }
