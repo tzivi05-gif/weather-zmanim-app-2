@@ -26,17 +26,17 @@ function ZmanimCard() {
 
     setLoading(false);
   };
+  const formatTime = (iso, timeZone) => {
+  if (!iso || !timeZone) return '—';
 
-  const formatTime = (iso) => {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '—';
-    return d.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(new Date(iso));
+};
+
 
   return (
     <div style={styles.card}>
