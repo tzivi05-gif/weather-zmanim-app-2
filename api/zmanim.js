@@ -6,26 +6,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1️⃣ City → Latitude / Longitude (OpenStreetMap)
+    // 1) City → Lat/Lon
     const geoRes = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city)}`,
-      {
-        headers: {
-          'User-Agent': 'weather-zmanim-app/1.0 (tzivi@example.com)',
-        },
-      }
+      { headers: { 'User-Agent': 'weather-zmanim-app' } }
     );
 
     if (!geoRes.ok) throw new Error('Geocoding failed');
-
     const geoData = await geoRes.json();
-    if (!geoData || geoData.length === 0) {
-      return res.status(404).json({ error: 'City not found' });
-    }
+    if (!geoData.length) throw new Error('City not found');
 
     const { lat, lon, display_name } = geoData[0];
 
-    // 2️⃣ Lat/Lon → Timezone
+    // 2) Lat/Lon → Timezone
     const tzKey = process.env.TIMEZONEDB_KEY;
     if (!tzKey) throw new Error('Missing TIMEZONEDB_KEY');
 
@@ -36,7 +29,7 @@ export default async function handler(req, res) {
     const tzData = await tzRes.json();
     if (!tzData.zoneName) throw new Error('Timezone lookup failed');
 
-    // 3️⃣ Zmanim with correct timezone
+    // 3) Zmanim
     const zmanimRes = await fetch(
       `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}&tzid=${tzData.zoneName}`
     );
@@ -44,13 +37,13 @@ export default async function handler(req, res) {
     const zmanimData = await zmanimRes.json();
     if (!zmanimData.times) throw new Error('Zmanim fetch failed');
 
-    return res.status(200).json({
+    res.status(200).json({
       city: display_name,
       timezone: tzData.zoneName,
       times: zmanimData.times,
     });
   } catch (err) {
-    console.error('Zmanim API error:', err.message);
-    return res.status(500).json({ error: 'Failed to fetch zmanim' });
+    console.error('Zmanim error:', err.message);
+    res.status(500).json({ error: err.message });
   }
 }
