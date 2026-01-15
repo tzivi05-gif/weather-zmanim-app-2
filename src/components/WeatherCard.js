@@ -7,42 +7,35 @@ function WeatherCard() {
   const [loading, setLoading] = useState(false);
   const [city, setCity] = useState('');
   const [error, setError] = useState('');
-  const [iconLoaded, setIconLoaded] = useState(false);
   const [hebrewDate, setHebrewDate] = useState('');
 
   const API_KEY = '41f002717e85cead697d31f90c3f09f2';
 
-  // ✅ Hebrew date (NO fetch, NO CORS)
+  // Hebrew date
   useEffect(() => {
     const hd = new HDate();
     setHebrewDate(hd.toString());
   }, []);
 
-  // 📍 Load saved city + geolocation
+  // Load saved city or geolocation
   useEffect(() => {
     const savedCity = localStorage.getItem('lastCity');
-    if (savedCity) {
-      setCity(savedCity);
-    }
+    if (savedCity) setCity(savedCity);
 
     if (!navigator.geolocation) return;
 
     setLoading(true);
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      async ({ coords }) => {
         try {
-          const { latitude, longitude } = position.coords;
-
-          const response = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=imperial`
+          const res = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${coords.latitude}&lon=${coords.longitude}&appid=${API_KEY}&units=imperial`
           );
 
-          if (!response.ok) {
-            throw new Error('Unable to fetch weather.');
-          }
+          if (!res.ok) throw new Error('Unable to fetch weather');
 
-          const data = await response.json();
+          const data = await res.json();
           setWeather(data);
           setCity(data.name);
           localStorage.setItem('lastCity', data.name);
@@ -56,30 +49,26 @@ function WeatherCard() {
     );
   }, []);
 
-  // 🔍 Fetch by city
   const fetchWeather = async () => {
     if (!city.trim()) {
-      setError('Please enter a city name.');
+      setError('Please enter a city');
       return;
     }
 
     setLoading(true);
     setError('');
     setWeather(null);
-    setIconLoaded(false);
 
     try {
-      const response = await fetch(
+      const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=imperial`
       );
 
-      if (!response.ok) {
-        throw new Error('City not found.');
-      }
+      if (!res.ok) throw new Error('City not found');
 
-      const data = await response.json();
+      const data = await res.json();
       setWeather(data);
-      localStorage.setItem('lastCity', city);
+      localStorage.setItem('lastCity', data.name);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -91,22 +80,18 @@ function WeatherCard() {
     <div className="card">
       <h2>🌤️ Weather</h2>
 
-      {hebrewDate && (
-        <p className="hebrew-date">📅 Hebrew Date: {hebrewDate}</p>
-      )}
+      <p className="subtle">📅 {hebrewDate}</p>
 
-      <input
-        type="text"
-        value={city}
-        onChange={(e) => setCity(e.target.value)}
-        placeholder="Enter city"
-      />
-
-      <button onClick={fetchWeather} disabled={loading}>
-        {loading ? 'Loading…' : 'Get Weather'}
-      </button>
-
-      {loading && !weather && <div className="spinner"></div>}
+      <div className="input-row">
+        <input
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="Enter city"
+        />
+        <button onClick={fetchWeather} disabled={loading}>
+          {loading ? 'Loading…' : 'Search'}
+        </button>
+      </div>
 
       {error && <p className="error">❌ {error}</p>}
 
@@ -114,22 +99,20 @@ function WeatherCard() {
         <div className="details">
           <h3>{weather.name}</h3>
 
-          {weather.weather?.[0]?.icon && (
-            <img
-              src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
-              alt={weather.weather[0].description}
-              className="weather-icon"
-              style={{ display: iconLoaded ? 'block' : 'none' }}
-              onLoad={() => setIconLoaded(true)}
-            />
-          )}
+          <img
+            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+            alt={weather.weather[0].description}
+            className="weather-icon"
+          />
 
-          <p>Temperature: {Math.round(weather.main.temp)}°F</p>
-          <p>Feels like: {Math.round(weather.main.feels_like)}°F</p>
-          <p>Conditions: {weather.weather[0].description}</p>
-          <p>Humidity: {weather.main.humidity}%</p>
-          <p>Wind Speed: {Math.round(weather.wind.speed)} mph</p>
-          <p>Pressure: {weather.main.pressure} hPa</p>
+          <div className="grid">
+            <div><strong>Temp</strong><span>{Math.round(weather.main.temp)}°F</span></div>
+            <div><strong>Feels</strong><span>{Math.round(weather.main.feels_like)}°F</span></div>
+            <div><strong>Humidity</strong><span>{weather.main.humidity}%</span></div>
+            <div><strong>Wind</strong><span>{Math.round(weather.wind.speed)} mph</span></div>
+          </div>
+
+          <p className="conditions">{weather.weather[0].description}</p>
         </div>
       )}
     </div>
