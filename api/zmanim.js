@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1️⃣ City → lat/lon (OpenStreetMap)
+    // 1️⃣ City → Latitude / Longitude
     const geoRes = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city)}`,
       {
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     const { lat, lon, display_name } = geoData[0];
 
-    // 2️⃣ Lat/lon → timezone (TimeZoneDB)
+    // 2️⃣ Lat/Lon → Timezone (TimeZoneDB)
     const tzRes = await fetch(
       `https://api.timezonedb.com/v2.1/get-time-zone?format=json&by=position&lat=${lat}&lng=${lon}&key=${process.env.TIMEZONEDB_KEY}`
     );
@@ -31,11 +31,21 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Timezone lookup failed' });
     }
 
-    // 3️⃣ Hebcal zmanim (timezone-aware)
+    // 3️⃣ Hebcal zmanim WITH timezone
     const zmanimRes = await fetch(
       `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}&tzid=${tzData.zoneName}`
     );
     const zmanimData = await zmanimRes.json();
+
+    const times = zmanimData.times || {};
+
+    // ✅ Nightfall fallback logic
+    const tzeit =
+      times.tzeit ||
+      times.tzeit72min ||
+      times.tzeit50min ||
+      times.tzeit_8_5deg ||
+      null;
 
     res.status(200).json({
       location: {
@@ -43,8 +53,8 @@ export default async function handler(req, res) {
         timezone: tzData.zoneName,
       },
       times: {
-        ...zmanimData.times,
-        tzeit: zmanimData.times.tzeit || zmanimData.times.tzeit72,
+        ...times,
+        tzeit, // always best available
       },
     });
   } catch (err) {
