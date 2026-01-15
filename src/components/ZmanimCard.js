@@ -3,20 +3,27 @@ import { useState } from 'react';
 function ZmanimCard() {
   const [city, setCity] = useState('Brooklyn');
   const [zmanim, setZmanim] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const fetchZmanim = async () => {
-    setLoading(true);
-    setError('');
+    setError(null);
     setZmanim(null);
+    setLoading(true);
 
     try {
       const res = await fetch(`/api/zmanim?city=${encodeURIComponent(city)}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
 
-      setZmanim(data);
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to load zmanim');
+      }
+
+      setZmanim({
+        city: data.city,
+        timezone: data.timezone,
+        times: data.times,
+      });
     } catch (err) {
       setError(err.message);
     }
@@ -24,15 +31,15 @@ function ZmanimCard() {
     setLoading(false);
   };
 
-  // 🔒 FORCE city timezone — NEVER browser timezone
-  const formatTime = (iso, tz) => {
+  const formatTime = (iso) => {
     if (!iso) return '—';
-    return new Intl.DateTimeFormat('en-US', {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-      timeZone: tz,
-    }).format(new Date(iso));
+    });
   };
 
   return (
@@ -49,24 +56,24 @@ function ZmanimCard() {
         {loading ? 'Loading…' : 'Get Zmanim'}
       </button>
 
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error">❌ {error}</p>}
 
       {zmanim && (
         <>
           <h3>{zmanim.city}</h3>
-          <p className="timezone">Timezone: {zmanim.timezone}</p>
+          <p><strong>Timezone:</strong> {zmanim.timezone}</p>
 
           <table>
             <tbody>
-              <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar, zmanim.timezone)}</td></tr>
-              <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise, zmanim.timezone)}</td></tr>
-              <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma, zmanim.timezone)}</td></tr>
-              <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla, zmanim.timezone)}</td></tr>
-              <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot, zmanim.timezone)}</td></tr>
-              <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola, zmanim.timezone)}</td></tr>
-              <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha, zmanim.timezone)}</td></tr>
-              <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset, zmanim.timezone)}</td></tr>
-              <tr><td>Nightfall (Tzeit)</td><td>{formatTime(zmanim.times.tzeit, zmanim.timezone)}</td></tr>
+              <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar)}</td></tr>
+              <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise)}</td></tr>
+              <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma)}</td></tr>
+              <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla)}</td></tr>
+              <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot)}</td></tr>
+              <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola)}</td></tr>
+              <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha)}</td></tr>
+              <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset)}</td></tr>
+              <tr><td>Nightfall (Tzeit)</td><td>{formatTime(zmanim.times.tzeit)}</td></tr>
             </tbody>
           </table>
         </>

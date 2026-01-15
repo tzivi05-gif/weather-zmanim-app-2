@@ -6,39 +6,51 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1️⃣ City → lat/lon
+    // 1️⃣ City → Latitude / Longitude (OpenStreetMap)
     const geoRes = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city)}`,
-      { headers: { 'User-Agent': 'weather-zmanim-app' } }
+      {
+        headers: {
+          'User-Agent': 'weather-zmanim-app/1.0 (tzivi@example.com)',
+        },
+      }
     );
-    const geo = await geoRes.json();
-    if (!geo.length) {
+
+    if (!geoRes.ok) throw new Error('Geocoding failed');
+
+    const geoData = await geoRes.json();
+    if (!geoData || geoData.length === 0) {
       return res.status(404).json({ error: 'City not found' });
     }
 
-    const { lat, lon, display_name } = geo[0];
+    const { lat, lon, display_name } = geoData[0];
 
-    // 2️⃣ lat/lon → timezone
+    // 2️⃣ Lat/Lon → Timezone
+    const tzKey = process.env.TIMEZONEDB_KEY;
+    if (!tzKey) throw new Error('Missing TIMEZONEDB_KEY');
+
     const tzRes = await fetch(
-      `https://api.timezonedb.com/v2.1/get-time-zone?format=json&by=position&lat=${lat}&lng=${lon}&key=${process.env.TIMEZONEDB_KEY}`
+      `https://api.timezonedb.com/v2.1/get-time-zone?format=json&by=position&lat=${lat}&lng=${lon}&key=${tzKey}`
     );
-    const tz = await tzRes.json();
-    if (!tz.zoneName) {
-      return res.status(500).json({ error: 'Timezone lookup failed' });
-    }
 
-    // 3️⃣ Hebcal zmanim (locked to city timezone)
+    const tzData = await tzRes.json();
+    if (!tzData.zoneName) throw new Error('Timezone lookup failed');
+
+    // 3️⃣ Zmanim with correct timezone
     const zmanimRes = await fetch(
-      `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}&tzid=${tz.zoneName}`
+      `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}&tzid=${tzData.zoneName}`
     );
-    const zmanim = await zmanimRes.json();
 
-    res.status(200).json({
+    const zmanimData = await zmanimRes.json();
+    if (!zmanimData.times) throw new Error('Zmanim fetch failed');
+
+    return res.status(200).json({
       city: display_name,
-      timezone: tz.zoneName,
-      times: zmanim.times,
+      timezone: tzData.zoneName,
+      times: zmanimData.times,
     });
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch zmanim' });
+  } catch (err) {
+    console.error('Zmanim API error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch zmanim' });
   }
 }
