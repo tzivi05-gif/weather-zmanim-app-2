@@ -7,9 +7,11 @@ function ZmanimCard() {
   const [loading, setLoading] = useState(false);
 
   const fetchZmanim = async () => {
+    if (!city) return;
+
+    setLoading(true);
     setError(null);
     setZmanim(null);
-    setLoading(true);
 
     try {
       const res = await fetch(`/api/zmanim?city=${encodeURIComponent(city)}`);
@@ -27,12 +29,15 @@ function ZmanimCard() {
     setLoading(false);
   };
 
-  const formatTime = (iso) => {
-    if (!iso) return '—';
+  // 🔥 CRITICAL FIX: force CITY timezone (not user timezone)
+  const formatTime = (iso, timeZone) => {
+    if (!iso || !timeZone) return '—';
+
     return new Date(iso).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
+      timeZone,
     });
   };
 
@@ -43,7 +48,7 @@ function ZmanimCard() {
       <input
         value={city}
         onChange={(e) => setCity(e.target.value)}
-        placeholder="Enter any city"
+        placeholder="Enter any city in the world"
         style={{ padding: 8, marginRight: 8 }}
       />
 
@@ -55,21 +60,22 @@ function ZmanimCard() {
       {zmanim && (
         <>
           <h3>{zmanim.location.title}</h3>
-          <p style={{ fontSize: 12 }}>
-            Timezone: {zmanim.location.timezone}
-          </p>
+          <p><strong>Timezone:</strong> {zmanim.location.timezone}</p>
 
           <table>
             <tbody>
-              <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar)}</td></tr>
-              <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise)}</td></tr>
-              <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma)}</td></tr>
-              <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla)}</td></tr>
-              <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot)}</td></tr>
-              <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola)}</td></tr>
-              <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha)}</td></tr>
-              <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset)}</td></tr>
-              <tr><td><strong>Nightfall</strong></td><td><strong>{formatTime(zmanim.times.tzeit)}</strong></td></tr>
+              <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar, zmanim.location.timezone)}</td></tr>
+              <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise, zmanim.location.timezone)}</td></tr>
+              <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma, zmanim.location.timezone)}</td></tr>
+              <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla, zmanim.location.timezone)}</td></tr>
+              <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot, zmanim.location.timezone)}</td></tr>
+              <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola, zmanim.location.timezone)}</td></tr>
+              <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha, zmanim.location.timezone)}</td></tr>
+              <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset, zmanim.location.timezone)}</td></tr>
+              <tr>
+                <td><strong>Nightfall (Tzeit)</strong></td>
+                <td><strong>{formatTime(zmanim.times.tzeit, zmanim.location.timezone)}</strong></td>
+              </tr>
             </tbody>
           </table>
         </>

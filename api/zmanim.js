@@ -6,13 +6,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1️⃣ City → Lat / Lon (OpenStreetMap)
+    // 1️⃣ City → lat/lon (OpenStreetMap)
     const geoRes = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city)}`,
       {
-        headers: {
-          'User-Agent': 'zmanim-app',
-        },
+        headers: { 'User-Agent': 'weather-zmanim-app' },
       }
     );
     const geoData = await geoRes.json();
@@ -23,7 +21,7 @@ export default async function handler(req, res) {
 
     const { lat, lon, display_name } = geoData[0];
 
-    // 2️⃣ Lat/Lon → Timezone (TimeZoneDB)
+    // 2️⃣ Lat/lon → timezone (TimeZoneDB)
     const tzRes = await fetch(
       `https://api.timezonedb.com/v2.1/get-time-zone?format=json&by=position&lat=${lat}&lng=${lon}&key=${process.env.TIMEZONEDB_KEY}`
     );
@@ -33,18 +31,11 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Timezone lookup failed' });
     }
 
-    // 3️⃣ Hebcal zmanim (WITH tzid)
+    // 3️⃣ Hebcal zmanim (timezone-aware)
     const zmanimRes = await fetch(
       `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}&tzid=${tzData.zoneName}`
     );
     const zmanimData = await zmanimRes.json();
-
-    // 4️⃣ Calculate Nightfall (Sunset + 40 min)
-    let tzeit = null;
-    if (zmanimData.times?.sunset) {
-      const sunset = new Date(zmanimData.times.sunset);
-      tzeit = new Date(sunset.getTime() + 40 * 60 * 1000).toISOString();
-    }
 
     res.status(200).json({
       location: {
@@ -53,11 +44,10 @@ export default async function handler(req, res) {
       },
       times: {
         ...zmanimData.times,
-        tzeit, // ✅ ALWAYS exists
+        tzeit: zmanimData.times.tzeit || zmanimData.times.tzeit72,
       },
     });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
     res.status(500).json({ error: 'Failed to fetch zmanim' });
   }
 }
