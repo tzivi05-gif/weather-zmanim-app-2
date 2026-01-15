@@ -1,23 +1,20 @@
 import { useState } from 'react';
 
 function ZmanimCard() {
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState('Brooklyn');
   const [zmanim, setZmanim] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const fetchZmanim = async () => {
-    if (!city.trim()) return;
-
     setLoading(true);
-    setError(null);
+    setError('');
     setZmanim(null);
 
     try {
       const res = await fetch(`/api/zmanim?city=${encodeURIComponent(city)}`);
       const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || 'Failed to load zmanim');
+      if (!res.ok) throw new Error(data.error);
 
       setZmanim(data);
     } catch (err) {
@@ -26,60 +23,50 @@ function ZmanimCard() {
 
     setLoading(false);
   };
-  const formatTime = (iso, timeZone) => {
-  if (!iso || !timeZone) return '—';
 
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(new Date(iso));
-};
-
+  // 🔒 FORCE city timezone — NEVER browser timezone
+  const formatTime = (iso, tz) => {
+    if (!iso) return '—';
+    return new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: tz,
+    }).format(new Date(iso));
+  };
 
   return (
-    <div style={styles.card}>
-      <h2 style={styles.title}>🕍 Zmanim by City</h2>
+    <div className="card">
+      <h2>🕍 Zmanim by City</h2>
 
-      <div style={styles.inputRow}>
-        <input
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Enter any city in the world"
-          style={styles.input}
-        />
-        <button onClick={fetchZmanim} style={styles.button}>
-          Get Zmanim
-        </button>
-      </div>
+      <input
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+        placeholder="Enter any city"
+      />
 
-      {loading && <p style={styles.info}>Loading…</p>}
-      {error && <p style={styles.error}>{error}</p>}
+      <button onClick={fetchZmanim} disabled={loading}>
+        {loading ? 'Loading…' : 'Get Zmanim'}
+      </button>
+
+      {error && <p className="error">{error}</p>}
 
       {zmanim && (
         <>
-          <h3 style={styles.city}>{zmanim.city}</h3>
-          <p style={styles.tz}>Timezone: {zmanim.timezone}</p>
+          <h3>{zmanim.city}</h3>
+          <p className="timezone">Timezone: {zmanim.timezone}</p>
 
-          <table style={styles.table}>
+          <table>
             <tbody>
-              {Object.entries({
-                'Alot Hashachar': zmanim.times.alotHaShachar,
-                Sunrise: zmanim.times.sunrise,
-                'Latest Shema': zmanim.times.sofZmanShma,
-                'Latest Tefillah': zmanim.times.sofZmanTfilla,
-                Chatzot: zmanim.times.chatzot,
-                'Mincha Gedola': zmanim.times.minchaGedola,
-                'Plag HaMincha': zmanim.times.plagHaMincha,
-                Sunset: zmanim.times.sunset,
-                'Nightfall (Tzeit)': zmanim.times.tzeit,
-              }).map(([label, time]) => (
-                <tr key={label}>
-                  <td style={styles.label}>{label}</td>
-                  <td style={styles.time}>{formatTime(time)}</td>
-                </tr>
-              ))}
+              <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar, zmanim.timezone)}</td></tr>
+              <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise, zmanim.timezone)}</td></tr>
+              <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma, zmanim.timezone)}</td></tr>
+              <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla, zmanim.timezone)}</td></tr>
+              <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot, zmanim.timezone)}</td></tr>
+              <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola, zmanim.timezone)}</td></tr>
+              <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha, zmanim.timezone)}</td></tr>
+              <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset, zmanim.timezone)}</td></tr>
+              <tr><td>Nightfall (Tzeit)</td><td>{formatTime(zmanim.times.tzeit, zmanim.timezone)}</td></tr>
             </tbody>
           </table>
         </>
@@ -87,72 +74,5 @@ function ZmanimCard() {
     </div>
   );
 }
-
-const styles = {
-  card: {
-    background: 'white',
-    borderRadius: 18,
-    padding: 24,
-    boxShadow: '0 12px 30px rgba(0,0,0,0.1)',
-    maxWidth: 520,
-    margin: '40px auto',
-  },
-  title: {
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  inputRow: {
-    display: 'flex',
-    gap: 10,
-    marginBottom: 16,
-  },
-  input: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 10,
-    border: '1px solid #ccc',
-    fontSize: 16,
-  },
-  button: {
-    padding: '12px 18px',
-    borderRadius: 10,
-    border: 'none',
-    background: '#673ab7',
-    color: 'white',
-    fontSize: 16,
-    cursor: 'pointer',
-  },
-  city: {
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  tz: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-  },
-  label: {
-    padding: '10px 0',
-    color: '#555',
-  },
-  time: {
-    padding: '10px 0',
-    textAlign: 'right',
-    fontWeight: 600,
-  },
-  error: {
-    color: 'red',
-    textAlign: 'center',
-  },
-  info: {
-    textAlign: 'center',
-    color: '#555',
-  },
-};
 
 export default ZmanimCard;
