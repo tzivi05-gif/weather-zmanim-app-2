@@ -13,11 +13,20 @@ function ZmanimCard() {
     setZmanim(null);
 
     try {
-      const res = await fetch(`/api/zmanim?city=${encodeURIComponent(city)}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to fetch zmanim');
+      const res = await fetch(
+        `https://www.hebcal.com/zmanim?cfg=json&city=${encodeURIComponent(city)}`
+      );
 
-      setZmanim(data);
+      if (!res.ok) throw new Error('Hebcal request failed');
+
+      const data = await res.json();
+      if (!data.times) throw new Error('No zmanim returned');
+
+      setZmanim({
+        city: data.location?.title || city,
+        timezone: data.location?.tzid || 'Unknown',
+        times: data.times,
+      });
     } catch (err) {
       setError(err.message);
     }
