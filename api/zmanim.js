@@ -6,19 +6,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `https://www.hebcal.com/zmanim?cfg=json&city=${encodeURIComponent(city)}`;
+    const today = new Date().toISOString().split('T')[0];
+
+    const url = `https://www.hebcal.com/zmanim?cfg=json&city=${encodeURIComponent(city)}&date=${today}`;
 
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'zmanim-app' },
+      headers: {
+        'User-Agent': 'zmanim-app',
+      },
     });
 
     if (!response.ok) {
+      console.error('Hebcal status:', response.status);
       return res.status(500).json({ error: 'Hebcal request failed' });
     }
 
     const data = await response.json();
 
     if (!data.times) {
+      console.error('No times returned:', data);
       return res.status(404).json({ error: 'No zmanim returned' });
     }
 
