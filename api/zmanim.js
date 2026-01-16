@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const { city } = req.query;
+  const city = req.query.city;
 
   if (!city) {
     return res.status(400).json({ error: 'City is required' });
@@ -10,22 +10,18 @@ export default async function handler(req, res) {
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error('Hebcal request failed');
+      return res.status(500).json({ error: 'Hebcal request failed' });
     }
 
     const data = await response.json();
 
     if (!data.times) {
-      throw new Error('No zmanim returned');
+      return res.status(404).json({ error: 'No zmanim found' });
     }
 
-    res.status(200).json({
-      city: data.location.title,
-      timezone: data.location.tzid,
-      times: data.times,
-    });
+    res.status(200).json(data);
   } catch (err) {
-    console.error('Zmanim API error:', err.message);
+    console.error('Zmanim API error:', err);
     res.status(500).json({ error: 'Failed to fetch zmanim' });
   }
 }
