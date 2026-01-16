@@ -1,21 +1,21 @@
-import { useState } from "react";
-import "./Card.css";
+import { useState } from 'react';
+import './Card.css';
 
 function ZmanimCard() {
-  const [city, setCity] = useState("Brooklyn");
+  const [city, setCity] = useState('Brooklyn');
   const [zmanim, setZmanim] = useState(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const fetchZmanim = async () => {
     setLoading(true);
-    setError("");
+    setError('');
     setZmanim(null);
 
     try {
       const res = await fetch(`/api/zmanim?city=${encodeURIComponent(city)}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch zmanim");
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch zmanim');
 
       setZmanim(data);
     } catch (err) {
@@ -26,10 +26,10 @@ function ZmanimCard() {
   };
 
   const formatTime = (iso) => {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
+    if (!iso) return '—';
+    return new Date(iso).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
       hour12: true,
     });
   };
@@ -41,11 +41,11 @@ function ZmanimCard() {
       <input
         value={city}
         onChange={(e) => setCity(e.target.value)}
-        placeholder="Enter city"
+        placeholder="Enter any city"
       />
 
       <button onClick={fetchZmanim} disabled={loading}>
-        {loading ? "Loading…" : "Get Zmanim"}
+        {loading ? 'Loading…' : 'Get Zmanim'}
       </button>
 
       {error && <p className="error">❌ {error}</p>}
@@ -54,6 +54,7 @@ function ZmanimCard() {
       {zmanim && (
         <>
           <h3>{zmanim.city}</h3>
+          <p className="timezone">Timezone: {zmanim.timezone}</p>
 
           <table>
             <tbody>
