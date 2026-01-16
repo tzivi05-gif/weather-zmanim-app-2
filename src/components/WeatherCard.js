@@ -11,13 +11,13 @@ function WeatherCard() {
 
   const API_KEY = '41f002717e85cead697d31f90c3f09f2';
 
-  // Hebrew date
+  // 📅 Hebrew date (local, no API)
   useEffect(() => {
     const hd = new HDate();
     setHebrewDate(hd.toString());
   }, []);
 
-  // Load saved city or geolocation
+  // 📍 Load saved city + geolocation
   useEffect(() => {
     const savedCity = localStorage.getItem('lastCity');
     if (savedCity) setCity(savedCity);
@@ -49,6 +49,7 @@ function WeatherCard() {
     );
   }, []);
 
+  // 🔍 Fetch by city
   const fetchWeather = async () => {
     if (!city.trim()) {
       setError('Please enter a city');
@@ -80,7 +81,7 @@ function WeatherCard() {
     <div className="card">
       <h2>🌤️ Weather</h2>
 
-      <p className="subtle">📅 {hebrewDate}</p>
+      {hebrewDate && <p className="subtle">📅 {hebrewDate}</p>}
 
       <div className="input-row">
         <input
@@ -105,11 +106,26 @@ function WeatherCard() {
             className="weather-icon"
           />
 
-          <div className="grid">
-            <div><strong>Temp</strong><span>{Math.round(weather.main.temp)}°F</span></div>
-            <div><strong>Feels</strong><span>{Math.round(weather.main.feels_like)}°F</span></div>
-            <div><strong>Humidity</strong><span>{weather.main.humidity}%</span></div>
-            <div><strong>Wind</strong><span>{Math.round(weather.wind.speed)} mph</span></div>
+          <div className="details-grid">
+            <div className="item">
+              <div className="label">Temperature</div>
+              <div className="value">{Math.round(weather.main.temp)}°F</div>
+            </div>
+
+            <div className="item">
+              <div className="label">Feels Like</div>
+              <div className="value">{Math.round(weather.main.feels_like)}°F</div>
+            </div>
+
+            <div className="item">
+              <div className="label">Humidity</div>
+              <div className="value">{weather.main.humidity}%</div>
+            </div>
+
+            <div className="item">
+              <div className="label">Wind</div>
+              <div className="value">{Math.round(weather.wind.speed)} mph</div>
+            </div>
           </div>
 
           <p className="conditions">{weather.weather[0].description}</p>
