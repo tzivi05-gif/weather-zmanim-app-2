@@ -2,14 +2,24 @@
   background: linear-gradient(135deg, #ffffff, #f4f3ff);
   border-radius: 16px;
   padding: 24px;
-  max-width: 420px;
+  max-width: 700px;
   margin: 24px auto;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.card .left,
+.card .right {
+  flex: 1;
 }
 
 .input-row {
   display: flex;
   gap: 10px;
+  margin-top: 8px;
 }
 
 .input-row input {
@@ -26,27 +36,19 @@
   background: #6d28d9;
   color: white;
   font-weight: 600;
+  cursor: pointer;
 }
 
-.zmanim-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 14px;
-}
-
-.zmanim-table td {
-  padding: 6px 4px;
-}
-
-.zmanim-table td:last-child {
-  text-align: right;
-  font-weight: 600;
+.input-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .weather-icon {
   display: block;
   margin: 0 auto 10px;
 }
+
 .grid {
   margin-top: 16px;
   display: flex;
@@ -71,10 +73,21 @@
   font-weight: 600;
   color: #111827;
 }
-@media (max-width: 480px) {
+
+.error {
+  color: #dc2626;
+  margin-top: 8px;
+}
+
+.subtle {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* 📱 Mobile fallback */
+@media (max-width: 700px) {
   .card {
-    padding: 16px;
-    margin: 16px;
+    flex-direction: column;
   }
 
   .input-row {
