@@ -15,14 +15,14 @@ function ZmanimCard() {
     try {
       const res = await fetch(`/api/zmanim?city=${encodeURIComponent(city)}`);
       const data = await res.json();
-      console.log("ZMANIM API RESPONSE:", data);
+      console.log("CLIENT ZMANIM RESPONSE:", data);
 
       if (!res.ok) throw new Error(data.error || 'Failed to fetch zmanim');
       if (!data.times) throw new Error('No zmanim returned');
 
       setZmanim(data);
     } catch (err) {
-      console.error(err);
+      console.error("Zmanim fetch error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
