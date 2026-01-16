@@ -74,6 +74,21 @@
   color: #111827;
 }
 
+.zmanim-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.zmanim-table td {
+  padding: 4px 2px;
+}
+
+.zmanim-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+
 .error {
   color: #dc2626;
   margin-top: 8px;
@@ -84,7 +99,7 @@
   font-size: 0.9rem;
 }
 
-/* 📱 Mobile fallback */
+/* 📱 Mobile */
 @media (max-width: 700px) {
   .card {
     flex-direction: column;

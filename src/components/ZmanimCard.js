@@ -19,9 +19,9 @@ function ZmanimCard() {
       setZmanim(data);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const formatTime = (iso) => {
@@ -35,41 +35,45 @@ function ZmanimCard() {
 
   return (
     <div className="card">
-      <h2>🕍 Zmanim</h2>
+      <div className="left">
+        <h2>🕍 Zmanim</h2>
 
-      <div className="input-row">
-        <input
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Enter city"
-        />
-        <button onClick={fetchZmanim} disabled={loading}>
-          {loading ? 'Loading…' : 'Get Zmanim'}
-        </button>
+        <div className="input-row">
+          <input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Enter city"
+          />
+          <button onClick={fetchZmanim} disabled={loading}>
+            {loading ? 'Loading…' : 'Get Zmanim'}
+          </button>
+        </div>
+
+        {error && <p className="error">❌ {error}</p>}
       </div>
 
-      {error && <p className="error">❌ {error}</p>}
+      <div className="right">
+        {zmanim && (
+          <>
+            <h3>{zmanim.city}</h3>
+            <p className="timezone">Timezone: {zmanim.timezone}</p>
 
-      {zmanim && (
-        <>
-          <h3>{zmanim.city}</h3>
-          <p className="timezone">Timezone: {zmanim.timezone}</p>
-
-          <table className="zmanim-table">
-            <tbody>
-              <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar)}</td></tr>
-              <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise)}</td></tr>
-              <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma)}</td></tr>
-              <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla)}</td></tr>
-              <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot)}</td></tr>
-              <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola)}</td></tr>
-              <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha)}</td></tr>
-              <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset)}</td></tr>
-              <tr><td>Nightfall (Tzeit)</td><td>{formatTime(zmanim.times.tzeit)}</td></tr>
-            </tbody>
-          </table>
-        </>
-      )}
+            <table className="zmanim-table">
+              <tbody>
+                <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar)}</td></tr>
+                <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise)}</td></tr>
+                <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma)}</td></tr>
+                <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla)}</td></tr>
+                <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot)}</td></tr>
+                <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola)}</td></tr>
+                <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha)}</td></tr>
+                <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset)}</td></tr>
+                <tr><td>Nightfall (Tzeit)</td><td>{formatTime(zmanim.times.tzeit)}</td></tr>
+              </tbody>
+            </table>
+          </>
+        )}
+      </div>
     </div>
   );
 }

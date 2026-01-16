@@ -9,8 +9,7 @@ function WeatherCard() {
   const [error, setError] = useState('');
   const [hebrewDate, setHebrewDate] = useState('');
 
-  const API_KEY = import.meta.env.VITE_OPENWEATHER_KEY; 
-  // For CRA: const API_KEY = process.env.REACT_APP_OPENWEATHER_KEY;
+  const API_KEY = import.meta.env.VITE_OPENWEATHER_KEY;
 
   useEffect(() => {
     const hd = new HDate();
@@ -78,22 +77,10 @@ function WeatherCard() {
             />
 
             <div className="grid">
-              <div className="row">
-                <span>Temp</span>
-                <span>{Math.round(weather.main.temp)}°F</span>
-              </div>
-              <div className="row">
-                <span>Feels</span>
-                <span>{Math.round(weather.main.feels_like)}°F</span>
-              </div>
-              <div className="row">
-                <span>Humidity</span>
-                <span>{weather.main.humidity}%</span>
-              </div>
-              <div className="row">
-                <span>Wind</span>
-                <span>{Math.round(weather.wind.speed)} mph</span>
-              </div>
+              <div className="row"><span>Temp</span><span>{Math.round(weather.main.temp)}°F</span></div>
+              <div className="row"><span>Feels</span><span>{Math.round(weather.main.feels_like)}°F</span></div>
+              <div className="row"><span>Humidity</span><span>{weather.main.humidity}%</span></div>
+              <div className="row"><span>Wind</span><span>{Math.round(weather.wind.speed)} mph</span></div>
             </div>
 
             <p className="conditions">{weather.weather[0].description}</p>
