@@ -1,20 +1,19 @@
 export default async function handler(req, res) {
   try {
-    const city = req.query.city || 'New York';
+    const city = (req.query.city || 'brooklyn').toLowerCase().trim();
 
-    // Map city → geonameid (you can add more later)
+    // City → lat/lon map
     const cityMap = {
-      'brooklyn': '5128581',
-      'new york': '5128581',
-      'nyc': '5128581',
-      'jerusalem': '281184',
-      'lakewood': '5100280'
+      brooklyn: { lat: 40.6782, lon: -73.9442 },
+      'new york': { lat: 40.7128, lon: -74.0060 },
+      nyc: { lat: 40.7128, lon: -74.0060 },
+      lakewood: { lat: 40.0954, lon: -74.2221 },
+      jerusalem: { lat: 31.7683, lon: 35.2137 },
     };
 
-    const key = city.toLowerCase().trim();
-    const geonameid = cityMap[key] || '5128581'; // default NYC
+    const loc = cityMap[city] || cityMap['brooklyn'];
 
-    const url = `https://www.hebcal.com/zmanim?cfg=json&geonameid=${geonameid}`;
+    const url = `https://www.hebcal.com/zmanim?cfg=json&latitude=${loc.lat}&longitude=${loc.lon}`;
 
     const response = await fetch(url, {
       headers: {
@@ -24,7 +23,7 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      console.error('Hebcal status:', response.status);
+      console.error('Hebcal HTTP status:', response.status);
       return res.status(500).json({ error: 'Hebcal request failed' });
     }
 
