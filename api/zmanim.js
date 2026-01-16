@@ -9,9 +9,7 @@ export default async function handler(req, res) {
     const url = `https://www.hebcal.com/zmanim?cfg=json&city=${encodeURIComponent(city)}`;
 
     const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'zmanim-app',
-      },
+      headers: { 'User-Agent': 'zmanim-app' },
     });
 
     if (!response.ok) {

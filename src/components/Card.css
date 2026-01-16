@@ -5,6 +5,7 @@
   max-width: 700px;
   margin: 24px auto;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+
   display: flex;
   gap: 24px;
   align-items: flex-start;
@@ -12,7 +13,8 @@
 
 .card .left,
 .card .right {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .input-row {
@@ -38,57 +40,28 @@
   cursor: pointer;
 }
 
-.weather-icon {
-  display: block;
-  margin: 0 auto 10px;
-}
-
-.grid {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .weather-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1rem;
   padding: 4px 0;
   border-bottom: 1px solid #eee;
 }
 
-.weather-row span:first-child {
-  font-weight: 500;
-  color: #374151;
+.zmanim-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.weather-row span:last-child {
+.zmanim-table td:last-child {
+  text-align: right;
   font-weight: 600;
-  color: #111827;
 }
 
-.error {
-  color: #dc2626;
-  margin-top: 8px;
-}
-
-.subtle {
-  color: #6b7280;
-  font-size: 0.9rem;
-}
+.error { color: #dc2626; }
+.subtle { color: #6b7280; }
 
 @media (max-width: 480px) {
-  .card {
-    flex-direction: column;
-  }
-
-  .input-row {
-    flex-direction: column;
-  }
-
-  .input-row button {
-    width: 100%;
-  }
+  .card { flex-direction: column; }
+  .input-row { flex-direction: column; }
 }

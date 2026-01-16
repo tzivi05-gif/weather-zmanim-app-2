@@ -18,8 +18,6 @@ function ZmanimCard() {
 
       if (!res.ok) throw new Error(data.error || 'Failed to fetch zmanim');
 
-      console.log('Zmanim API data:', data); // debug
-
       setZmanim(data);
     } catch (err) {
       setError(err.message || 'Error loading zmanim');
