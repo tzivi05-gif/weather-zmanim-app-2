@@ -18,7 +18,7 @@ function ZmanimCard() {
 
       if (!res.ok) throw new Error(data.error || 'Failed to fetch zmanim');
 
-      console.log('Zmanim API data:', data); // 👈 keep for debugging
+      console.log('Zmanim API data:', data); // debug
 
       setZmanim(data);
     } catch (err) {
@@ -30,7 +30,6 @@ function ZmanimCard() {
 
   const formatTime = (value) => {
     if (!value) return '—';
-
     const date = new Date(value);
     if (isNaN(date)) return '—';
 

@@ -10,12 +10,11 @@ export default async function handler(req, res) {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'weather-zmanim-app',
+        'User-Agent': 'zmanim-app',
       },
     });
 
     if (!response.ok) {
-      console.error('Hebcal status:', response.status);
       return res.status(500).json({ error: 'Hebcal request failed' });
     }
 
