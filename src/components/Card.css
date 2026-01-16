@@ -47,3 +47,41 @@
   display: block;
   margin: 0 auto 10px;
 }
+.grid {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grid .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.grid .row span:first-child {
+  font-weight: 500;
+  color: #374151;
+}
+
+.grid .row span:last-child {
+  font-weight: 600;
+  color: #111827;
+}
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+    margin: 16px;
+  }
+
+  .input-row {
+    flex-direction: column;
+  }
+
+  .input-row button {
+    width: 100%;
+  }
+}

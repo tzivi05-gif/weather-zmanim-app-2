@@ -65,14 +65,12 @@ function WeatherCard() {
             alt={weather.weather[0].description}
           />
 
-          <table className="zmanim-table">
-            <tbody>
-              <tr><td>Temp</td><td>{Math.round(weather.main.temp)}°F</td></tr>
-              <tr><td>Feels Like</td><td>{Math.round(weather.main.feels_like)}°F</td></tr>
-              <tr><td>Humidity</td><td>{weather.main.humidity}%</td></tr>
-              <tr><td>Wind</td><td>{Math.round(weather.wind.speed)} mph</td></tr>
-            </tbody>
-          </table>
+          <div className="grid">
+  <div className="row"><span>Temp</span><span>{Math.round(weather.main.temp)}°F</span></div>
+  <div className="row"><span>Feels</span><span>{Math.round(weather.main.feels_like)}°F</span></div>
+  <div className="row"><span>Humidity</span><span>{weather.main.humidity}%</span></div>
+  <div className="row"><span>Wind</span><span>{Math.round(weather.wind.speed)} mph</span></div>
+</div>
 
           <p className="conditions">{weather.weather[0].description}</p>
         </>
