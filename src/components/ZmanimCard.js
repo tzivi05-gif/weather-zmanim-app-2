@@ -6,6 +6,8 @@ function ZmanimCard() {
   const [zmanim, setZmanim] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [resolvedCity, setResolvedCity] = useState('');
+  const [tzid, setTzid] = useState('');
 
   const fetchZmanim = async () => {
     if (!city.trim()) return;
@@ -22,7 +24,8 @@ function ZmanimCard() {
 
       if (!geoData[0]) throw new Error('City not found');
 
-      const { lat, lon } = geoData[0];
+      const { lat, lon, name } = geoData[0];
+      setResolvedCity(name);
 
       // 2️⃣ Hebcal Zmanim
       const zmanimRes = await fetch(
@@ -31,22 +34,28 @@ function ZmanimCard() {
       const zmanimData = await zmanimRes.json();
 
       setZmanim(zmanimData);
+      setTzid(zmanimData.location?.tzid || 'UTC');
     } catch (err) {
       console.error(err);
       setError('Could not load zmanim for that city.');
       setZmanim(null);
+      setResolvedCity('');
+      setTzid('');
     }
 
     setLoading(false);
   };
 
   const formatTime = (timeString) => {
-    if (!timeString) return '—';
+    if (!timeString || !tzid) return '—';
+
     const date = new Date(timeString);
+
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
+      timeZone: tzid   // 🌍 FIXED timezone per city
     });
   };
 
@@ -73,6 +82,8 @@ function ZmanimCard() {
       <div className="right">
         {zmanim && !error && (
           <>
+            <h3>{resolvedCity}</h3>
+
             <p><strong>Alot Hashachar:</strong> {formatTime(zmanim.times?.alotHaShachar)}</p>
             <p><strong>Sunrise (Netz):</strong> {formatTime(zmanim.times?.sunrise)}</p>
             <p><strong>Latest Shema:</strong> {formatTime(zmanim.times?.sofZmanShma)}</p>
