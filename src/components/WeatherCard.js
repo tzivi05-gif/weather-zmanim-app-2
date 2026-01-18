@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Card from './Card';
+import './Card.css';
 
 function WeatherCard() {
   const [weather, setWeather] = useState(null);
@@ -11,7 +11,10 @@ function WeatherCard() {
   useEffect(() => {
     fetchHebrewDate();
 
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setError('Geolocation not supported');
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -41,7 +44,7 @@ function WeatherCard() {
     try {
       const API_KEY = 'fa62c6ce2848e696a638e127e739ff92';
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=imperial`
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cityName)}&appid=${API_KEY}&units=imperial`
       );
 
       if (!response.ok) throw new Error('City not found');
@@ -81,7 +84,7 @@ function WeatherCard() {
   };
 
   return (
-    <Card isLoading={loading}>
+    <div className="card">
       <div className="left">
         <h2>🌤 Weather</h2>
         <p className="subtle">{hebrewDate && `📅 ${hebrewDate}`}</p>
@@ -104,7 +107,11 @@ function WeatherCard() {
         {error && <p className="error">❌ {error}</p>}
       </div>
 
-      <div className="right">
+      {/* 🔥 This is what makes it animate like Zmanim */}
+      <div
+        className="right weather-list"
+        key={weather?.dt || weather?.name || 'weather'}
+      >
         {weather && !error && (
           <>
             <h3>{weather.name}</h3>
@@ -118,7 +125,7 @@ function WeatherCard() {
           </>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 

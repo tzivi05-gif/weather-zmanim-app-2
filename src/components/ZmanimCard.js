@@ -114,7 +114,7 @@ function ZmanimCard() {
         {error && <p className="error">❌ {error}</p>}
       </div>
 
-      <div className="right">
+      <div className="right zmanim-list">
         {zmanim && !error && (
           <>
             <h3>
