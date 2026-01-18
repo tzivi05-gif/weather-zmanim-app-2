@@ -2,14 +2,15 @@
   background: linear-gradient(135deg, #ffffff, #f4f3ff);
   border-radius: 16px;
   padding: 24px;
-  max-width: 700px;
+  max-width: 1000px;
   margin: 24px auto;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: flex-start;
+  animation: fadeSlideIn 0.6s ease-out both;
 }
+
 
 .card .left,
 .card .right {
@@ -40,68 +41,70 @@
   cursor: pointer;
 }
 
-.weather-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0;
-  border-bottom: 1px solid #eee;
+.weather-list h3 {
+  font-size: 1.5rem;
+  margin-bottom: 2px;
 }
 
-.zmanim-table {
+.weather-list .subtle {
+  margin-bottom: 12px;
+}
+
+.weather-list p {
+  font-size: 0.95rem;
+  margin: 4px 0;
+  opacity: 0;
+  animation: fadeUp 0.4s ease forwards;
+}
+
+.weather-list p:nth-child(1) { animation-delay: 0.05s; }
+.weather-list p:nth-child(2) { animation-delay: 0.1s; }
+.weather-list p:nth-child(3) { animation-delay: 0.15s; }
+.weather-list p:nth-child(4) { animation-delay: 0.2s; }
+.weather-list p:nth-child(5) { animation-delay: 0.25s; }
+.weather-list p:nth-child(6) { animation-delay: 0.3s; }
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
   width: 100%;
-  border-collapse: collapse;
 }
 
-.zmanim-table td:last-child {
-  text-align: right;
+.forecast-day {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: popIn 0.4s ease both;
+}
+
+.forecast-day:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+}
+
+.forecast-day .date {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.forecast-day img {
+  width: 56px;
+  height: 56px;
+}
+
+.forecast-day div {
+  margin-top: 4px;
   font-weight: 600;
 }
 
 .error { color: #dc2626; }
 .subtle { color: #6b7280; }
-
-/* 🔄 Spinner */
-.spinner {
-  width: 36px;
-  height: 36px;
-  border: 4px solid #e5e7eb;
-  border-top: 4px solid #6d28d9;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 40px auto;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (max-width: 480px) {
-  .card { flex-direction: column; }
-  .input-row { flex-direction: column; }
-}
-
-.forecast-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.forecast-day {
-  text-align: center;
-  background: rgba(255,255,255,0.06);
-  padding: 0.5rem;
-  border-radius: 10px;
-}
-.forecast-day .date {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.card {
-  animation: fadeSlideIn 0.6s ease-out both;
-}
 
 @keyframes fadeSlideIn {
   from {
@@ -114,49 +117,29 @@
   }
 }
 
-.weather-list p {
-  opacity: 0;
-  animation: fadeUp 0.4s ease forwards;
-}
-
-.weather-list p:nth-child(1) { animation-delay: 0.05s; }
-.weather-list p:nth-child(2) { animation-delay: 0.1s; }
-.weather-list p:nth-child(3) { animation-delay: 0.15s; }
-.weather-list p:nth-child(4) { animation-delay: 0.2s; }
-.weather-list p:nth-child(5) { animation-delay: 0.25s; }
-.weather-list p:nth-child(6) { animation-delay: 0.3s; }
-.weather-list p:nth-child(7) { animation-delay: 0.35s; }
-.weather-list p:nth-child(8) { animation-delay: 0.4s; }
-
-.fade-in {
-  animation: fadeIn 0.6s ease forwards;
-}
-
-.slide-up {
-  opacity: 0;
-  transform: translateY(10px);
-  animation: slideUp 0.4s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes slideUp {
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.forecast-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 12px;
-  margin-top: 1rem;
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-.forecast-day {
-  text-align: center;
+@media (max-width: 480px) {
+  .card { flex-direction: column; }
+  .input-row { flex-direction: column; }
 }

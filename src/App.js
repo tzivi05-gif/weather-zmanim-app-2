@@ -1,55 +1,13 @@
-import { useEffect, useState } from 'react';
 import './App.css';
 import WeatherCard from './components/WeatherCard';
 import ZmanimCard from './components/ZmanimCard';
 
 function App() {
-  const [hebrewDate, setHebrewDate] = useState('');
-  const [dateError, setDateError] = useState(false);
-
-  useEffect(() => {
-    const fetchHebrewDate = async () => {
-      try {
-        const today = new Date();
-        const gy = today.getFullYear();
-        const gm = today.getMonth() + 1;
-        const gd = today.getDate();
-
-        const res = await fetch(
-          `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1`
-        );
-
-        if (!res.ok) throw new Error('Bad response');
-
-        const data = await res.json();
-
-        if (data?.hd && data?.hm && data?.hy) {
-          setHebrewDate(`${data.hd} ${data.hm} ${data.hy}`);
-        } else {
-          throw new Error('Invalid Hebrew date data');
-        }
-      } catch (err) {
-        console.error('Failed to load Hebrew date', err);
-        setDateError(true);
-      }
-    };
-
-    fetchHebrewDate();
-  }, []);
-
   return (
     <div className="App">
       <header className="app-header">
         <h1>🌤️ Weather & 🕯️ Zmanim App 🕍</h1>
         <p>Get weather and Jewish prayer times for your location</p>
-
-        {hebrewDate && (
-          <p className="hebrew-date">📅 {hebrewDate}</p>
-        )}
-
-        {dateError && (
-          <p className="hebrew-date error">📅 Unable to load Hebrew date</p>
-        )}
       </header>
 
       <main className="app-main">
