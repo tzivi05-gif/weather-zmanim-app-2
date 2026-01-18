@@ -20,12 +20,12 @@ function WeatherCard() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
+      (position) => {
+        const { latitude, longitude } = position.coords;
         fetchWeatherByCoords(latitude, longitude);
       },
       () => {
-        setError("Location blocked. Enter a city.");
+        setError("Location permission denied");
       }
     );
   }, []);
@@ -35,9 +35,7 @@ function WeatherCard() {
       const res = await fetch("/api/hebrew-date");
       const data = await res.json();
       setHebrewDate(`${data.hd} ${data.hm} ${data.hy}`);
-    } catch {
-      console.warn("Hebrew date failed");
-    }
+    } catch {}
   };
 
   const fetchWeather = async () => {
@@ -86,7 +84,7 @@ function WeatherCard() {
     } catch {
       setWeather(null);
       setForecast([]);
-      setError("Could not load location weather");
+      setError("Could not load weather from your location");
     } finally {
       setLoading(false);
     }
@@ -99,19 +97,14 @@ function WeatherCard() {
       );
       const data = await res.json();
 
-      if (!data.list || !Array.isArray(data.list)) {
-        setForecast([]);
-        return;
-      }
+      if (!data.list) return;
 
       const daily = data.list.filter((item) =>
         item.dt_txt.includes("12:00:00")
       );
 
       setForecast(daily.slice(0, 5));
-    } catch {
-      setForecast([]);
-    }
+    } catch {}
   };
 
   const formatDay = (dt) =>
@@ -120,7 +113,7 @@ function WeatherCard() {
   return (
     <div className="card">
       <div className="left">
-        <h2 className="emoji-title">🌤 Weather</h2>
+        <h2>🌤 Weather</h2>
         <p className="subtle">{hebrewDate && `📅 ${hebrewDate}`}</p>
 
         <div className="input-row">
@@ -145,7 +138,14 @@ function WeatherCard() {
         {weather && !error && (
           <>
             <h3>{weather.name}</h3>
-            <p className="subtle">{weather.weather?.[0]?.description}</p>
+            <div className="weather-main">
+  <img
+    className="weather-icon"
+    src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+    alt={weather.weather[0].description}
+  />
+  <p className="subtle">{weather.weather[0].description}</p>
+</div>
             <p>🌡 {Math.round(weather.main.temp)}°F</p>
             <p>🤔 Feels Like {Math.round(weather.main.feels_like)}°F</p>
             <p>💧 Humidity {weather.main.humidity}%</p>
