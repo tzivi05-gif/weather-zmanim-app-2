@@ -34,3 +34,10 @@
   text-align: center;
   color: #555;
 }
+
+.hebrew-date {
+  margin-top: 6px;
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  opacity: 0.9;
+}

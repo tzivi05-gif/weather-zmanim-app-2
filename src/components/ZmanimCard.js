@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Card from './Card';
 
 function ZmanimCard() {
@@ -7,7 +7,33 @@ function ZmanimCard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [resolvedCity, setResolvedCity] = useState('');
+  const [country, setCountry] = useState('');
+  const [flag, setFlag] = useState('');
   const [tzid, setTzid] = useState('');
+  const [hebrewDate, setHebrewDate] = useState('');
+
+  useEffect(() => {
+    fetchHebrewDate();
+  }, []);
+
+  const fetchHebrewDate = async () => {
+    try {
+      const res = await fetch('/api/hebrew-date');
+      const data = await res.json();
+      setHebrewDate(`${data.hd} ${data.hm} ${data.hy}`);
+    } catch {
+      console.error('Failed to load Hebrew date');
+    }
+  };
+
+  const countryToFlag = (countryCode) => {
+    if (!countryCode) return '';
+    return countryCode
+      .toUpperCase()
+      .replace(/./g, char =>
+        String.fromCodePoint(127397 + char.charCodeAt())
+      );
+  };
 
   const fetchZmanim = async () => {
     if (!city.trim()) return;
@@ -16,7 +42,7 @@ function ZmanimCard() {
     setError(null);
 
     try {
-      // 1️⃣ City → lat/lon
+      // 1️⃣ City → lat/lon + country
       const geoRes = await fetch(
         `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=fa62c6ce2848e696a638e127e739ff92`
       );
@@ -24,14 +50,20 @@ function ZmanimCard() {
 
       if (!geoData[0]) throw new Error('City not found');
 
-      const { lat, lon, name } = geoData[0];
+      const { lat, lon, name, country } = geoData[0];
       setResolvedCity(name);
+      setCountry(country);
+      setFlag(countryToFlag(country));
 
       // 2️⃣ Hebcal Zmanim
       const zmanimRes = await fetch(
         `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}`
       );
       const zmanimData = await zmanimRes.json();
+
+      if (!zmanimData.times || Object.keys(zmanimData.times).length === 0) {
+        throw new Error('No zmanim data available');
+      }
 
       setZmanim(zmanimData);
       setTzid(zmanimData.location?.tzid || 'UTC');
@@ -40,6 +72,8 @@ function ZmanimCard() {
       setError('Could not load zmanim for that city.');
       setZmanim(null);
       setResolvedCity('');
+      setCountry('');
+      setFlag('');
       setTzid('');
     }
 
@@ -55,7 +89,7 @@ function ZmanimCard() {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-      timeZone: tzid   // 🌍 FIXED timezone per city
+      timeZone: tzid
     });
   };
 
@@ -63,6 +97,7 @@ function ZmanimCard() {
     <Card isLoading={loading}>
       <div className="left">
         <h2>🕍 Zmanim</h2>
+        <p className="subtle">{hebrewDate && `📅 ${hebrewDate}`}</p>
 
         <div className="input-row">
           <input
@@ -82,7 +117,9 @@ function ZmanimCard() {
       <div className="right">
         {zmanim && !error && (
           <>
-            <h3>{resolvedCity}</h3>
+            <h3>
+              {flag} {resolvedCity}, {country}
+            </h3>
 
             <p><strong>Alot Hashachar:</strong> {formatTime(zmanim.times?.alotHaShachar)}</p>
             <p><strong>Sunrise (Netz):</strong> {formatTime(zmanim.times?.sunrise)}</p>
