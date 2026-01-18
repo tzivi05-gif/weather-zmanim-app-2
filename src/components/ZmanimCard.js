@@ -129,7 +129,13 @@ function ZmanimCard() {
             <p><strong>Mincha Gedola:</strong> {formatTime(zmanim.times?.minchaGedola)}</p>
             <p><strong>Plag HaMincha:</strong> {formatTime(zmanim.times?.plagHaMincha)}</p>
             <p><strong>Sunset (Shkiah):</strong> {formatTime(zmanim.times?.sunset)}</p>
-            <p><strong>Nightfall (Tzeit):</strong> {formatTime(zmanim.times?.tzeit)}</p>
+            <p><strong>Nightfall (Tzeit):</strong>{' '} {formatTime(
+    zmanim.times?.tzeit ||
+    zmanim.times?.tzeit42min ||
+    zmanim.times?.tzeit50min ||
+    zmanim.times?.tzeit72min
+  )}
+</p>
           </>
         )}
       </div>
