@@ -1,38 +1,51 @@
 import { useState } from 'react';
-import './Card.css';
 
 function ZmanimCard() {
-  const [city, setCity] = useState('Brooklyn');
+  const [city, setCity] = useState('');
   const [zmanim, setZmanim] = useState(null);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchZmanim = async () => {
+    if (!city.trim()) return;
+
     setLoading(true);
-    setError('');
-    setZmanim(null);
+    setError(null);
 
     try {
-      const res = await fetch(`/api/zmanim?city=${encodeURIComponent(city)}`);
-      const data = await res.json();
+      // 1️⃣ City → lat/lon (same API as Weather)
+      const geoRes = await fetch(
+        `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=fa62c6ce2848e696a638e127e739ff92`
+      );
+      const geoData = await geoRes.json();
 
-      console.log('CLIENT ZMANIM RESPONSE:', data);
+      if (!geoData[0]) throw new Error('City not found');
 
-      if (!res.ok) throw new Error(data.error || 'Failed to fetch zmanim');
-      setZmanim(data);
+      const { lat, lon } = geoData[0];
+
+      // 2️⃣ Fetch zmanim from Hebcal
+      const zmanimRes = await fetch(
+        `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}`
+      );
+      const zmanimData = await zmanimRes.json();
+
+      setZmanim(zmanimData);
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      console.error(err);
+      setError('Could not load zmanim for that city.');
+      setZmanim(null);
     }
+
+    setLoading(false);
   };
 
-  const formatTime = (iso) => {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleTimeString('en-US', {
+  const formatTime = (timeString) => {
+    if (!timeString) return '—';
+    const date = new Date(timeString);
+    return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true,
+      hour12: true
     });
   };
 
@@ -45,6 +58,7 @@ function ZmanimCard() {
           <input
             value={city}
             onChange={(e) => setCity(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && fetchZmanim()}
             placeholder="Enter city"
           />
           <button onClick={fetchZmanim} disabled={loading}>
@@ -56,23 +70,17 @@ function ZmanimCard() {
       </div>
 
       <div className="right">
-        {zmanim && zmanim.times && (
+        {zmanim && !error && (
           <>
-            <h3>{zmanim.location?.city || city}</h3>
-
-            <table className="zmanim-table">
-              <tbody>
-                <tr><td>Alot Hashachar</td><td>{formatTime(zmanim.times.alotHaShachar)}</td></tr>
-                <tr><td>Sunrise</td><td>{formatTime(zmanim.times.sunrise)}</td></tr>
-                <tr><td>Latest Shema</td><td>{formatTime(zmanim.times.sofZmanShma)}</td></tr>
-                <tr><td>Latest Tefillah</td><td>{formatTime(zmanim.times.sofZmanTfilla)}</td></tr>
-                <tr><td>Chatzot</td><td>{formatTime(zmanim.times.chatzot)}</td></tr>
-                <tr><td>Mincha Gedola</td><td>{formatTime(zmanim.times.minchaGedola)}</td></tr>
-                <tr><td>Plag HaMincha</td><td>{formatTime(zmanim.times.plagHaMincha)}</td></tr>
-                <tr><td>Sunset</td><td>{formatTime(zmanim.times.sunset)}</td></tr>
-                <tr><td>Nightfall (Tzeit)</td><td>{formatTime(zmanim.times.tzeit7083deg)}</td></tr>
-              </tbody>
-            </table>
+            <p><strong>Alot Hashachar:</strong> {formatTime(zmanim.alotHaShachar)}</p>
+            <p><strong>Sunrise (Netz):</strong> {formatTime(zmanim.sunrise)}</p>
+            <p><strong>Latest Shema:</strong> {formatTime(zmanim.sofZmanShma)}</p>
+            <p><strong>Latest Tefillah:</strong> {formatTime(zmanim.sofZmanTfilla)}</p>
+            <p><strong>Chatzot:</strong> {formatTime(zmanim.chatzot)}</p>
+            <p><strong>Mincha Gedola:</strong> {formatTime(zmanim.minchaGedola)}</p>
+            <p><strong>Plag HaMincha:</strong> {formatTime(zmanim.plagHaMincha)}</p>
+            <p><strong>Sunset (Shkiah):</strong> {formatTime(zmanim.sunset)}</p>
+            <p><strong>Nightfall (Tzeit):</strong> {formatTime(zmanim.tzeit)}</p>
           </>
         )}
       </div>
@@ -81,3 +89,8 @@ function ZmanimCard() {
 }
 
 export default ZmanimCard;
+
+
+
+
+

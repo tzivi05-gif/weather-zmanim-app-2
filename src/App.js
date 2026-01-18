@@ -1,17 +1,25 @@
+import './App.css';
 import WeatherCard from './components/WeatherCard';
 import ZmanimCard from './components/ZmanimCard';
-import './App.css';
 
-export default function App() {
+function App() {
   return (
-    <div className="container">
-      <header className="hero">
-        <h1>🌤️ Weather & 🕍 Zmanim App</h1>
+    <div className="App">
+      <header className="app-header">
+        <h1>🌤️ Weather & 🕯️ Zmanim App 🕍</h1>
         <p>Get weather and Jewish prayer times for your location</p>
       </header>
 
-      <WeatherCard />
-      <ZmanimCard />
+      <main className="app-main">
+        <WeatherCard />
+        <ZmanimCard />
+      </main>
+
+      <footer className="app-footer">
+        <p>Built with React ⚛️</p>
+      </footer>
     </div>
   );
 }
+
+export default App;

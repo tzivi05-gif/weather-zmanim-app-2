@@ -1,71 +1,36 @@
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: linear-gradient(180deg, #eef2ff, #ffffff);
-  color: #111827;
+.App {
+  min-height: 100vh;
+  background-color: #f5f7fb;
 }
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 32px 16px 60px;
-}
-
-/* === Hero Header === */
-.hero {
+.app-header {
+  background: linear-gradient(135deg, #282c34, #1f2933);
+  padding: 28px 20px;
+  color: white;
   text-align: center;
-  margin-bottom: 36px;
 }
 
-.hero h1 {
-  font-size: 2.3rem;
+.app-header h1 {
+  margin: 0;
+  font-size: 2.4rem;
   font-weight: 800;
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
 }
 
-.hero p {
-  font-size: 1rem;
-  color: #6b7280;
+.app-header p {
+  margin-top: 6px;
+  color: #d1d5db;
 }
 
-/* === Loading Spinner === */
-.spinner {
-  width: 46px;
-  height: 46px;
-  border: 4px solid #e5e7eb;
-  border-top: 4px solid #6366f1;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 28px auto;
+.app-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 20px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* === Weather / Details Images === */
-.details img {
-  display: block;
-  margin: 12px auto;
-  width: 60px;
-  height: 60px;
-}
-
-/* === Utility === */
-.hidden {
-  display: none;
-}
-
-/* === Responsive === */
-@media (max-width: 600px) {
-  .hero h1 {
-    font-size: 1.8rem;
-  }
-
-  .container {
-    padding: 24px 12px 48px;
-  }
+.app-footer {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #f0f0f0;
+  text-align: center;
+  color: #555;
 }
