@@ -3,6 +3,7 @@ import './Card.css';
 
 function WeatherCard() {
   const [weather, setWeather] = useState(null);
+  const [forecast, setForecast] = useState([]);
   const [hebrewDate, setHebrewDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [city, setCity] = useState('');
@@ -43,17 +44,31 @@ function WeatherCard() {
 
     try {
       const API_KEY = 'fa62c6ce2848e696a638e127e739ff92';
-      const response = await fetch(
+
+      // Current weather
+      const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cityName)}&appid=${API_KEY}&units=imperial`
       );
+      if (!res.ok) throw new Error('City not found');
+      const data = await res.json();
 
-      if (!response.ok) throw new Error('City not found');
-
-      const data = await response.json();
       setWeather(data);
       setCity(data.name);
+
+      // 5-day forecast
+      const forecastRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${data.coord.lat}&lon=${data.coord.lon}&appid=${API_KEY}&units=imperial`
+      );
+      const forecastData = await forecastRes.json();
+
+      const daily = forecastData.list.filter(item =>
+        item.dt_txt.includes('12:00:00')
+      );
+
+      setForecast(daily.slice(0, 5));
     } catch (err) {
       setWeather(null);
+      setForecast([]);
       setError(err.message || 'Weather error');
     } finally {
       setLoading(false);
@@ -66,21 +81,39 @@ function WeatherCard() {
 
     try {
       const API_KEY = 'fa62c6ce2848e696a638e127e739ff92';
-      const response = await fetch(
+
+      const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=imperial`
       );
+      if (!res.ok) throw new Error();
 
-      if (!response.ok) throw new Error();
-
-      const data = await response.json();
+      const data = await res.json();
       setWeather(data);
       setCity(data.name);
+
+      const forecastRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=imperial`
+      );
+      const forecastData = await forecastRes.json();
+
+      const daily = forecastData.list.filter(item =>
+        item.dt_txt.includes('12:00:00')
+      );
+
+      setForecast(daily.slice(0, 5));
     } catch {
       setWeather(null);
+      setForecast([]);
       setError('Could not load weather for your location.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatDay = (dt) => {
+    return new Date(dt * 1000).toLocaleDateString('en-US', {
+      weekday: 'short'
+    });
   };
 
   return (
@@ -107,11 +140,7 @@ function WeatherCard() {
         {error && <p className="error">❌ {error}</p>}
       </div>
 
-      {/* 🔥 This is what makes it animate like Zmanim */}
-      <div
-        className="right weather-list"
-        key={weather?.dt || weather?.name || 'weather'}
-      >
+      <div className="right weather-list" key={weather?.dt || weather?.name || 'weather'}>
         {weather && !error && (
           <>
             <h3>{weather.name}</h3>
@@ -120,8 +149,20 @@ function WeatherCard() {
             <p>🤔 Feels Like {Math.round(weather.main.feels_like)}°F</p>
             <p>💧 Humidity {weather.main.humidity}%</p>
             <p>🌬 Wind {Math.round(weather.wind.speed)} mph</p>
-            <p>📈 Pressure {weather.main.pressure} hPa</p>
-            <p>👁 Visibility {Math.round(weather.visibility / 1000)} km</p>
+
+            {/* 🔽 5-Day Forecast */}
+            <div className="forecast-grid">
+              {forecast.map((day) => (
+                <div key={day.dt} className="forecast-day">
+                  <div className="date">{formatDay(day.dt)}</div>
+                  <img
+                    src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
+                    alt=""
+                  />
+                  <div>{Math.round(day.main.temp)}°F</div>
+                </div>
+              ))}
+            </div>
           </>
         )}
       </div>
