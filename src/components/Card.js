@@ -1,14 +1,17 @@
-function Card({ title, content }) {
+import "./Card.css";
+
+function Card({ title, content, isLoading, children }) {
   return (
-    <div style={{
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      padding: '20px',
-      margin: '10px',
-      backgroundColor: '#f9f9f9'
-    }}>
-      <h2>{title}</h2>
-      <p>{content}</p>
+    <div className="card">
+      {isLoading ? (
+        <div className="spinner" />
+      ) : (
+        <>
+          {title && <h2 className="card-title">{title}</h2>}
+          {content && <p className="card-content">{content}</p>}
+          {children}
+        </>
+      )}
     </div>
   );
 }

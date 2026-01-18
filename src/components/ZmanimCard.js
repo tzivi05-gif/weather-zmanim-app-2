@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Card from './Card';
 
 function ZmanimCard() {
   const [city, setCity] = useState('');
@@ -13,7 +14,7 @@ function ZmanimCard() {
     setError(null);
 
     try {
-      // 1️⃣ City → lat/lon (same API as Weather)
+      // 1️⃣ City → lat/lon
       const geoRes = await fetch(
         `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=fa62c6ce2848e696a638e127e739ff92`
       );
@@ -23,7 +24,7 @@ function ZmanimCard() {
 
       const { lat, lon } = geoData[0];
 
-      // 2️⃣ Fetch zmanim from Hebcal
+      // 2️⃣ Hebcal Zmanim
       const zmanimRes = await fetch(
         `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}`
       );
@@ -50,7 +51,7 @@ function ZmanimCard() {
   };
 
   return (
-    <div className="card">
+    <Card isLoading={loading}>
       <div className="left">
         <h2>🕍 Zmanim</h2>
 
@@ -72,25 +73,20 @@ function ZmanimCard() {
       <div className="right">
         {zmanim && !error && (
           <>
-            <p><strong>Alot Hashachar:</strong> {formatTime(zmanim.alotHaShachar)}</p>
-            <p><strong>Sunrise (Netz):</strong> {formatTime(zmanim.sunrise)}</p>
-            <p><strong>Latest Shema:</strong> {formatTime(zmanim.sofZmanShma)}</p>
-            <p><strong>Latest Tefillah:</strong> {formatTime(zmanim.sofZmanTfilla)}</p>
-            <p><strong>Chatzot:</strong> {formatTime(zmanim.chatzot)}</p>
-            <p><strong>Mincha Gedola:</strong> {formatTime(zmanim.minchaGedola)}</p>
-            <p><strong>Plag HaMincha:</strong> {formatTime(zmanim.plagHaMincha)}</p>
-            <p><strong>Sunset (Shkiah):</strong> {formatTime(zmanim.sunset)}</p>
-            <p><strong>Nightfall (Tzeit):</strong> {formatTime(zmanim.tzeit)}</p>
+            <p><strong>Alot Hashachar:</strong> {formatTime(zmanim.times?.alotHaShachar)}</p>
+            <p><strong>Sunrise (Netz):</strong> {formatTime(zmanim.times?.sunrise)}</p>
+            <p><strong>Latest Shema:</strong> {formatTime(zmanim.times?.sofZmanShma)}</p>
+            <p><strong>Latest Tefillah:</strong> {formatTime(zmanim.times?.sofZmanTfilla)}</p>
+            <p><strong>Chatzot:</strong> {formatTime(zmanim.times?.chatzot)}</p>
+            <p><strong>Mincha Gedola:</strong> {formatTime(zmanim.times?.minchaGedola)}</p>
+            <p><strong>Plag HaMincha:</strong> {formatTime(zmanim.times?.plagHaMincha)}</p>
+            <p><strong>Sunset (Shkiah):</strong> {formatTime(zmanim.times?.sunset)}</p>
+            <p><strong>Nightfall (Tzeit):</strong> {formatTime(zmanim.times?.tzeit)}</p>
           </>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
 export default ZmanimCard;
-
-
-
-
-

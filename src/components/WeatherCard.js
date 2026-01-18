@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import './Card.css';
+import Card from './Card';
 
 function WeatherCard() {
   const [weather, setWeather] = useState(null);
@@ -9,20 +9,18 @@ function WeatherCard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-  fetchHebrewDate();
+    fetchHebrewDate();
 
-  if (!navigator.geolocation) return;
+    if (!navigator.geolocation) return;
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords;
-      fetchWeatherByCoords(latitude, longitude);
-    },
-    () => {
-      // Do nothing if user blocks location
-    }
-  );
-}, []);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        fetchWeatherByCoords(latitude, longitude);
+      },
+      () => {}
+    );
+  }, []);
 
   const fetchHebrewDate = async () => {
     try {
@@ -83,7 +81,7 @@ function WeatherCard() {
   };
 
   return (
-    <div className="card">
+    <Card isLoading={loading}>
       <div className="left">
         <h2>🌤 Weather</h2>
         <p className="subtle">{hebrewDate && `📅 ${hebrewDate}`}</p>
@@ -116,11 +114,11 @@ function WeatherCard() {
             <p>💧 Humidity {weather.main.humidity}%</p>
             <p>🌬 Wind {Math.round(weather.wind.speed)} mph</p>
             <p>📈 Pressure {weather.main.pressure} hPa</p>
-            <p> 👁 Visibility {Math.round(weather.visibility / 1000)} km</p>
+            <p>👁 Visibility {Math.round(weather.visibility / 1000)} km</p>
           </>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
