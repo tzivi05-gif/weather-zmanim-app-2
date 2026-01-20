@@ -3,11 +3,20 @@
   background-color: #f5f7fb;
 }
 
+.App.dark {
+  background-color: #0b1120;
+  color: #e5e7eb;
+}
+
 .app-header {
   background: linear-gradient(135deg, #282c34, #1f2933);
   padding: 28px 20px;
   color: white;
   text-align: center;
+}
+
+.App.dark .app-header {
+  background: linear-gradient(135deg, #0f172a, #111827);
 }
 
 .app-header h1 {
@@ -19,6 +28,25 @@
 .app-header p {
   margin-top: 6px;
   color: #d1d5db;
+}
+
+.App.dark .app-header p {
+  color: #cbd5f5;
+}
+
+.theme-toggle {
+  margin-top: 16px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: #f9fafb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .app-main {
@@ -33,6 +61,11 @@
   background-color: #f0f0f0;
   text-align: center;
   color: #555;
+}
+
+.App.dark .app-footer {
+  background-color: #111827;
+  color: #cbd5f5;
 }
 
 .hebrew-date {
