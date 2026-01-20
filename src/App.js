@@ -1,30 +1,20 @@
-import { useEffect, useState } from 'react';
 import './App.css';
 import WeatherCard from './components/WeatherCard';
 import ZmanimCard from './components/ZmanimCard';
+import { useTheme } from './ThemeContext';
 
 function App() {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) {
-      setIsDark(saved === 'dark');
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  }, [isDark]);
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
-    <div className={`App${isDark ? ' dark' : ''}`}>
+    <div className="App">
       <header className="app-header">
         <h1>🌤️ Weather & 🕯️ Zmanim App 🕍</h1>
         <p>Get weather and Jewish prayer times for your location</p>
         <button
           className="theme-toggle"
-          onClick={() => setIsDark((prev) => !prev)}
+          onClick={toggleTheme}
           aria-pressed={isDark}
           type="button"
         >

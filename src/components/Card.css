@@ -11,7 +11,7 @@
   animation: fadeSlideIn 0.6s ease-out both;
 }
 
-.App.dark .card {
+body.dark .card {
   background: linear-gradient(135deg, #111827, #0f172a);
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   color: #e5e7eb;
@@ -37,13 +37,13 @@
   border: 1px solid #ddd;
 }
 
-.App.dark .input-row input {
+body.dark .input-row input {
   background-color: #0b1220;
   border-color: #374151;
   color: #e5e7eb;
 }
 
-.App.dark .input-row input::placeholder {
+body.dark .input-row input::placeholder {
   color: #94a3b8;
 }
 
@@ -57,7 +57,7 @@
   cursor: pointer;
 }
 
-.App.dark .input-row button {
+body.dark .input-row button {
   background: #7c3aed;
 }
 
@@ -102,7 +102,7 @@
   animation: popIn 0.4s ease both;
 }
 
-.App.dark .forecast-day {
+body.dark .forecast-day {
   background: #0b1220;
   box-shadow: 0 4px 14px rgba(0,0,0,0.4);
 }
@@ -131,7 +131,7 @@
 .error { color: #dc2626; }
 .subtle { color: #6b7280; }
 
-.App.dark .subtle { color: #9ca3af; }
+body.dark .subtle { color: #9ca3af; }
 
 @keyframes fadeSlideIn {
   from {
