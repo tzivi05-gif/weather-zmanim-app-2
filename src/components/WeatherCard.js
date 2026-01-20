@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Card.css";
 
-function WeatherCard() {
+function WeatherCard({ theme }) {
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState([]);
   const [hebrewDate, setHebrewDate] = useState("");
@@ -111,7 +111,14 @@ function WeatherCard() {
     new Date(dt * 1000).toLocaleDateString("en-US", { weekday: "short" });
 
   return (
-    <div className="card">
+    <div
+      className="card"
+      style={{
+        backgroundColor: theme.weatherCardBackground,
+        border: `2px solid ${theme.weatherCardBorder}`,
+        color: theme.text
+      }}
+    >
       <div className="left">
         <h2>🌤 Weather</h2>
         <p className="subtle">{hebrewDate && `📅 ${hebrewDate}`}</p>
@@ -125,8 +132,20 @@ function WeatherCard() {
             }}
             onKeyDown={(e) => e.key === "Enter" && fetchWeather()}
             placeholder="Enter city"
+            style={{
+              backgroundColor: theme.cardBackground,
+              color: theme.text,
+              border: `1px solid ${theme.cardBorder}`
+            }}
           />
-          <button onClick={fetchWeather} disabled={loading}>
+          <button
+            onClick={fetchWeather}
+            disabled={loading}
+            style={{
+              backgroundColor: theme.weatherCardBorder,
+              color: "#fff"
+            }}
+          >
             {loading ? "Loading…" : "Get Weather"}
           </button>
         </div>
@@ -153,7 +172,15 @@ function WeatherCard() {
 
             <div className="forecast-grid">
               {forecast.map((day) => (
-                <div key={day.dt} className="forecast-day">
+                <div
+                  key={day.dt}
+                  className="forecast-day"
+                  style={{
+                    backgroundColor: theme.cardBackground,
+                    color: theme.text,
+                    border: `1px solid ${theme.cardBorder}`
+                  }}
+                >
                   <div className="date">{formatDay(day.dt)}</div>
                   <img
                     src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}

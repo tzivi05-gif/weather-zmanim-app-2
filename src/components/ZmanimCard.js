@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Card from './Card';
 
-function ZmanimCard() {
+function ZmanimCard({ theme }) {
   const [city, setCity] = useState('');
   const [zmanim, setZmanim] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -150,7 +150,14 @@ function ZmanimCard() {
   };
 
   return (
-    <Card isLoading={loading}>
+    <Card
+      isLoading={loading}
+      style={{
+        backgroundColor: theme.zmanimCardBackground,
+        border: `2px solid ${theme.zmanimCardBorder}`,
+        color: theme.text
+      }}
+    >
       <div className="left">
         <h2>🕍 Zmanim</h2>
         <p className="subtle">{hebrewDate && `📅 ${hebrewDate}`}</p>
@@ -161,8 +168,20 @@ function ZmanimCard() {
             onChange={(e) => setCity(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchZmanim()}
             placeholder="Enter city"
+            style={{
+              backgroundColor: theme.cardBackground,
+              color: theme.text,
+              border: `1px solid ${theme.cardBorder}`
+            }}
           />
-          <button onClick={fetchZmanim} disabled={loading}>
+          <button
+            onClick={fetchZmanim}
+            disabled={loading}
+            style={{
+              backgroundColor: theme.zmanimCardBorder,
+              color: '#fff'
+            }}
+          >
             {loading ? 'Loading…' : 'Get Zmanim'}
           </button>
         </div>

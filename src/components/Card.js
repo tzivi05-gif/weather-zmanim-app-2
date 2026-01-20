@@ -1,8 +1,8 @@
 import "./Card.css";
 
-function Card({ title, content, isLoading, children }) {
+function Card({ title, content, isLoading, children, style }) {
   return (
-    <div className="card">
+    <div className="card" style={style}>
       {isLoading ? (
         <div className="spinner" />
       ) : (
