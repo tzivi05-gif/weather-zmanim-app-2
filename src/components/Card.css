@@ -57,6 +57,87 @@ body.dark .input-row input::placeholder {
   cursor: pointer;
 }
 
+.favorites-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.favorites-section {
+  margin-top: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.favorites-section h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  letter-spacing: 0.2px;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  justify-items: start;
+  text-align: left;
+  align-items: start;
+}
+
+.favorites-section .input-row {
+  margin-top: 4px;
+}
+
+.favorites-section .subtle {
+  margin-top: 10px;
+}
+
+.favorites-grid .input-row {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.favorites-grid .input-row input {
+  min-width: 0;
+  flex: 1 1 180px;
+}
+
+.favorite-row {
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.favorite-row span {
+  word-break: break-word;
+}
+
+.favorite-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.favorite-row button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card-title {
+  margin-bottom: 4px;
+}
+
+.favorites-subtitle {
+  margin: 4px 0 0;
+}
+
 body.dark .input-row button {
   background: #7c3aed;
 }
