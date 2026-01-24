@@ -15,7 +15,9 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
   const [forecast, setForecast] = useState<ForecastResponse["list"]>([]);
   const [hebrewDate, setHebrewDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [city, setCity] = useState("Brooklyn");
+  const [city, setCity] = useState(
+    selectedCity ?? selectedLocation?.city ?? ""
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
