@@ -73,11 +73,10 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
 
   const fetchHebrewDate = async () => {
     try {
-      const res = await fetch("/api/hebrew-date");
-      const data = await res.json();
+      const data = await api.getHebrewDate();
       setHebrewDate(`${data.hd} ${data.hm} ${data.hy}`);
     } catch {
-      console.error("Failed to load Hebrew date");
+      setHebrewDate("");
     }
   };
 

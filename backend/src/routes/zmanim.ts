@@ -1,8 +1,14 @@
 import { Router, Request, Response } from "express";
 import fetch from "node-fetch";
+import https from "https";
 import { Cache } from "../utils/cache";
 
 const router = Router();
+
+const allowInsecureTls = process.env.BACKEND_INSECURE_TLS === "true";
+const insecureAgent = allowInsecureTls
+  ? new https.Agent({ rejectUnauthorized: false })
+  : undefined;
 
 // GET /api/zmanim?latitude=40.6782&longitude=-73.9442
 router.get("/", async (req: Request, res: Response) => {
@@ -27,7 +33,9 @@ router.get("/", async (req: Request, res: Response) => {
     }
 
     const apiUrl = `https://www.hebcal.com/zmanim?cfg=json&latitude=${latitude}&longitude=${longitude}`;
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      agent: insecureAgent
+    });
 
     if (!response.ok) {
       return res.status(response.status).json({

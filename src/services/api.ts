@@ -1,5 +1,4 @@
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
 
 export interface WeatherResponse {
   name: string;
@@ -54,6 +53,13 @@ export interface ZmanimResponse {
   cached?: boolean;
 }
 
+export interface HebrewDateResponse {
+  hd: string | number;
+  hm: string;
+  hy: string | number;
+  cached?: boolean;
+}
+
 export const api = {
   async getWeather(city: string): Promise<WeatherResponse> {
     const response = await fetch(
@@ -104,6 +110,16 @@ export const api = {
 
     if (!response.ok) {
       throw new Error("Failed to fetch zmanim");
+    }
+
+    return response.json();
+  },
+
+  async getHebrewDate(): Promise<HebrewDateResponse> {
+    const response = await fetch(`${API_BASE_URL}/hebrew-date`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch Hebrew date");
     }
 
     return response.json();

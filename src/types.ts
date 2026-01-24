@@ -14,10 +14,4 @@ export type Theme = {
 };
 
 export type ThemesMap = Record<ThemeName, Theme>;
-
-export type Location = {
-  id?: string;
-  city: string;
-  latitude: number | null;
-  longitude: number | null;
-};
+export type { Location } from "./types/location";

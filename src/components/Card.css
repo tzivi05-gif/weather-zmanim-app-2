@@ -57,6 +57,26 @@ body.dark .input-row input::placeholder {
   cursor: pointer;
 }
 
+.input-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 4px solid rgba(0, 0, 0, 0.15);
+  border-top-color: rgba(0, 0, 0, 0.5);
+  margin: 12px auto;
+  animation: spin 0.9s linear infinite;
+}
+
+body.dark .spinner {
+  border-color: rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.7);
+}
+
 .favorites-list {
   margin-top: 16px;
   display: grid;
@@ -244,6 +264,12 @@ body.dark .subtle { color: #9ca3af; }
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

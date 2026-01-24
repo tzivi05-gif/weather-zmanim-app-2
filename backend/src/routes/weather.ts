@@ -1,8 +1,14 @@
 import { Router, Request, Response } from "express";
 import fetch from "node-fetch";
+import https from "https";
 import { Cache } from "../utils/cache";
 
 const router = Router();
+
+const allowInsecureTls = process.env.BACKEND_INSECURE_TLS === "true";
+const insecureAgent = allowInsecureTls
+  ? new https.Agent({ rejectUnauthorized: false })
+  : undefined;
 
 // GET /api/weather?city=Brooklyn
 router.get("/", async (req: Request, res: Response) => {
@@ -52,7 +58,9 @@ router.get("/", async (req: Request, res: Response) => {
     const apiUrl = city
       ? `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=imperial`
       : `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      agent: insecureAgent
+    });
 
     if (!response.ok) {
       return res.status(response.status).json({

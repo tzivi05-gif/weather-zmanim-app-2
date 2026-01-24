@@ -2,6 +2,43 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Local development
+
+### Requirements
+- Node.js 18+
+- An OpenWeather API key
+
+### Setup
+1. Create `backend/.env` from `backend/env.example` and set `OPENWEATHER_API_KEY`.
+2. Install dependencies:
+   - `npm install`
+   - `npm --prefix backend install`
+
+### Run the app
+- `npm run dev` starts the React app and backend API together.
+- Frontend runs on `http://localhost:3000`
+- Backend runs on `http://localhost:3001`
+- The frontend proxies `/api` requests to the backend in development.
+
+### Deploy / production
+- Build frontend + backend: `npm run build`
+- Start backend (serves the frontend build when `NODE_ENV=production`): `npm start`
+- Make sure to set `OPENWEATHER_API_KEY` in the backend environment.
+- If the frontend is hosted separately, set `REACT_APP_API_URL` to your API base URL.
+- If the backend serves the frontend build, set `NODE_ENV=production` when starting the backend.
+
+### Deploy to Railway (backend)
+- Set the Railway root directory to `backend`.
+- Build command: `npm run build`
+- Start command: `npm start`
+- Environment variables: `OPENWEATHER_API_KEY` (required), `PORT` (Railway provides).
+
+### Deploy to Vercel (frontend)
+- Set the Vercel root directory to the project root (the folder with `package.json`).
+- Build command: `npm run build`
+- Output directory: `build`
+- Environment variables: `REACT_APP_API_URL` set to your Railway backend URL (e.g. `https://your-app.up.railway.app/api`).
+
 ## Available Scripts
 
 In the project directory, you can run:

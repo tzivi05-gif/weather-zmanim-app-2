@@ -8,7 +8,7 @@ import zmanimRouter from "./routes/zmanim";
 import geocodeRouter from "./routes/geocode";
 import forecastRouter from "./routes/forecast";
 import cacheRouter from "./routes/cache";
-import hebrewDateRouter from "./routes/hebrewDate";
+import hebrewDateRouter from "./routes/hebrew-date";
 
 // Load environment variables
 dotenv.config();

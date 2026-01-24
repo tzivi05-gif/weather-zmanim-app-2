@@ -65,10 +65,11 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
 
   const fetchHebrewDate = async () => {
     try {
-      const res = await fetch("/api/hebrew-date");
-      const data = await res.json();
+      const data = await api.getHebrewDate();
       setHebrewDate(`${data.hd} ${data.hm} ${data.hy}`);
-    } catch {}
+    } catch {
+      setHebrewDate("");
+    }
   };
 
   const fetchWeather = async (cityToFetch?: string) => {

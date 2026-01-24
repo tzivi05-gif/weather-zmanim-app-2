@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { Theme } from "../themes";
 import { Location } from "../types/location";
 
@@ -12,20 +12,49 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
   const [newCity, setNewCity] = useState("");
   const [newLat, setNewLat] = useState("");
   const [newLon, setNewLon] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const storageKey = "favoriteLocations";
+  const isAddDisabled = !newCity.trim() || !newLat.trim() || !newLon.trim();
+  const addButtonStyle: CSSProperties = {
+    padding: "8px 16px",
+    margin: "5px",
+    cursor: isAddDisabled ? "not-allowed" : "pointer",
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    opacity: isAddDisabled ? 0.6 : 1
+  };
 
   // Load favorites from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("favoriteLocations");
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
-      setFavorites(JSON.parse(saved));
+      try {
+        const parsed = JSON.parse(saved) as unknown;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter((entry): entry is Location => {
+            if (typeof entry !== "object" || entry === null) return false;
+            const candidate = entry as Location;
+            const validCity = typeof candidate.city === "string";
+            const validLat =
+              typeof candidate.latitude === "number" || candidate.latitude === null;
+            const validLon =
+              typeof candidate.longitude === "number" || candidate.longitude === null;
+            return validCity && validLat && validLon;
+          });
+          setFavorites(cleaned);
+        }
+      } catch {
+        setFavorites([]);
+      }
     }
-  }, []);
+  }, [storageKey]);
 
   // Save favorites to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem("favoriteLocations", JSON.stringify(favorites));
-  }, [favorites]);
+    localStorage.setItem(storageKey, JSON.stringify(favorites));
+  }, [favorites, storageKey]);
 
   const addFavorite = () => {
     const trimmedCity = newCity.trim();
@@ -67,16 +96,16 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
       longitude
     };
 
-    setFavorites([...favorites, newLocation]);
+    setFavorites((prev) => [...prev, newLocation]);
     setNewCity("");
     setNewLat("");
     setNewLon("");
-    setError("");
+    setError(null);
   };
 
   const removeFavorite = (id?: string) => {
     if (!id) return;
-    setFavorites(favorites.filter((loc) => loc.id !== id));
+    setFavorites((prev) => prev.filter((loc) => loc.id !== id));
   };
 
   return (
@@ -101,9 +130,10 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
           value={newCity}
           onChange={(e) => {
             setNewCity(e.target.value);
-            setError("");
+            setError(null);
           }}
           onKeyDown={(e) => e.key === "Enter" && addFavorite()}
+          aria-label="City name"
           style={{
             padding: "8px",
             margin: "5px",
@@ -119,10 +149,11 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
           value={newLat}
           onChange={(e) => {
             setNewLat(e.target.value);
-            setError("");
+            setError(null);
           }}
           onKeyDown={(e) => e.key === "Enter" && addFavorite()}
           step="0.0001"
+          aria-label="Latitude"
           style={{
             padding: "8px",
             margin: "5px",
@@ -139,10 +170,11 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
           value={newLon}
           onChange={(e) => {
             setNewLon(e.target.value);
-            setError("");
+            setError(null);
           }}
           onKeyDown={(e) => e.key === "Enter" && addFavorite()}
           step="0.0001"
+          aria-label="Longitude"
           style={{
             padding: "8px",
             margin: "5px",
@@ -155,21 +187,13 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
         />
         <button
           onClick={addFavorite}
-          style={{
-            padding: "8px 16px",
-            margin: "5px",
-            cursor: "pointer",
-            backgroundColor: "#4CAF50",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px"
-          }}
+          disabled={isAddDisabled}
+          type="button"
+          style={addButtonStyle}
         >
           Add
         </button>
-        {error ? (
-          <p style={{ marginTop: "8px", color: "#f44336" }}>{error}</p>
-        ) : null}
+        {error ? <p style={{ marginTop: "8px", color: "#f44336" }}>{error}</p> : null}
       </div>
 
       {/* List of favorites */}
@@ -210,6 +234,7 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
                 <div>
                   <button
                     onClick={() => onSelectLocation(location)}
+                    type="button"
                     style={{
                       padding: "6px 12px",
                       marginRight: "5px",
@@ -224,6 +249,7 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
                   </button>
                   <button
                     onClick={() => removeFavorite(location.id)}
+                    type="button"
                     style={{
                       padding: "6px 12px",
                       cursor: "pointer",
