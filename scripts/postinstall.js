@@ -1,4 +1,5 @@
 const { execFileSync, execSync } = require("child_process");
+const path = require("path");
 
 if (process.env.VERCEL) {
   console.log("Skipping backend install on Vercel.");
@@ -8,9 +9,19 @@ if (process.env.VERCEL) {
 const npmExecPath = process.env.npm_execpath;
 
 if (npmExecPath) {
-  execFileSync(process.execPath, [npmExecPath, "--prefix", "backend", "install"], {
-    stdio: "inherit"
-  });
+  const nodeBinDir = path.dirname(process.execPath);
+  const nextEnv = {
+    ...process.env,
+    PATH: process.env.PATH
+      ? `${nodeBinDir};${process.env.PATH}`
+      : nodeBinDir
+  };
+
+  execFileSync(
+    process.execPath,
+    [npmExecPath, "--prefix", "backend", "install"],
+    { stdio: "inherit", env: nextEnv }
+  );
 } else {
   execSync("npm --prefix backend install", { stdio: "inherit" });
 }

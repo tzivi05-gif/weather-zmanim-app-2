@@ -24,7 +24,7 @@
     "dev": "concurrently \"npm run start:client\" \"npm run server:dev\"",
     "build:server": "npm --prefix backend run build",
     "build": "node scripts/build.js",
-    "postinstall": "node scripts/postinstall.js",
+    "postinstall": ".\\scripts\\postinstall.cmd || node scripts/postinstall.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
