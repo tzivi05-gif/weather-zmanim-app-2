@@ -39,12 +39,20 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
   }, []);
 
   useEffect(() => {
-    if (selectedCity && selectedCity !== city) {
+    if (!selectedCity) return;
+
+    if (selectedCity !== city) {
       setCity(selectedCity);
       setError(null);
       fetchWeather(selectedCity);
+      return;
     }
-  }, [selectedCity, city]);
+
+    if (!weather) {
+      setError(null);
+      fetchWeather(selectedCity);
+    }
+  }, [selectedCity, city, weather]);
 
   useEffect(() => {
     if (!selectedLocation?.city) return;

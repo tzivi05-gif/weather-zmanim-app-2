@@ -1,5 +1,25 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
 
+const getErrorMessage = async (
+  response: Response,
+  fallback: string
+): Promise<string> => {
+  try {
+    const text = await response.text();
+    if (!text) return fallback;
+    try {
+      const data = JSON.parse(text) as { error?: string; message?: string };
+      if (data?.error) return data.error;
+      if (data?.message) return data.message;
+    } catch {
+      // Non-JSON response body, fall through to raw text.
+    }
+    return text;
+  } catch {
+    return fallback;
+  }
+};
+
 export interface WeatherResponse {
   name: string;
   main: {
@@ -67,7 +87,7 @@ export const api = {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch weather");
+      throw new Error(await getErrorMessage(response, "Failed to fetch weather"));
     }
 
     return response.json();
@@ -82,7 +102,7 @@ export const api = {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch weather");
+      throw new Error(await getErrorMessage(response, "Failed to fetch weather"));
     }
 
     return response.json();
@@ -97,7 +117,7 @@ export const api = {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch forecast");
+      throw new Error(await getErrorMessage(response, "Failed to fetch forecast"));
     }
 
     return response.json();
@@ -109,7 +129,7 @@ export const api = {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch zmanim");
+      throw new Error(await getErrorMessage(response, "Failed to fetch zmanim"));
     }
 
     return response.json();
@@ -119,7 +139,9 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/hebrew-date`);
 
     if (!response.ok) {
-      throw new Error("Failed to fetch Hebrew date");
+      throw new Error(
+        await getErrorMessage(response, "Failed to fetch Hebrew date")
+      );
     }
 
     return response.json();
