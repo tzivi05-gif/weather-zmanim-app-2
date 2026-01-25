@@ -1,6 +1,6 @@
+import "./utils/env";
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import weatherRouter from "./routes/weather";
@@ -9,9 +9,6 @@ import geocodeRouter from "./routes/geocode";
 import forecastRouter from "./routes/forecast";
 import cacheRouter from "./routes/cache";
 import hebrewDateRouter from "./routes/hebrew-date";
-
-// Load environment variables
-dotenv.config();
 
 const app: Express = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -26,7 +23,10 @@ const corsOrigins = rawCorsOrigins
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) => {
       if (!origin || corsOrigins.length === 0) {
         return callback(null, true);
       }
