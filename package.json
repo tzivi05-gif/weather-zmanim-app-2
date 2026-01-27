@@ -25,6 +25,7 @@
     "install:backend": "npm --prefix backend install",
     "build:server": "npm --prefix backend run build",
     "build": "node scripts/build.js",
+    "postinstall": "node scripts/postinstall.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
