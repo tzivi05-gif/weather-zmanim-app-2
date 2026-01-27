@@ -13,13 +13,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/node": "^20.x",
     "better-sqlite3": "^12.6.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "node-fetch": "^2.7.0",
-    "weather-zmanim-app": "file:..",
-    "@types/node": "^20.x"
+    "weather-zmanim-app": "file:.."
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
