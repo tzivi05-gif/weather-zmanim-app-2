@@ -11,7 +11,11 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types",
+      "../node_modules/@types"
+    ],
     "types": ["node"]
   },
   "include": ["src/**/*"],
