@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import WeatherCard from "./components/WeatherCard";
 import ZmanimCard from "./components/ZmanimCard";
@@ -6,12 +6,19 @@ import { useTheme } from "./contexts/ThemeContext";
 import { themes } from "./themes";
 import FavoriteLocations from "./components/FavoriteLocations";
 import type { Location } from "./types";
+import { api } from "./services/api";
 
 function App() {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
   const currentTheme = themes[theme];
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+
+  useEffect(() => {
+    api.getHealth().catch((error) => {
+      console.warn("API health check failed", error);
+    });
+  }, []);
 
   return (
     <div

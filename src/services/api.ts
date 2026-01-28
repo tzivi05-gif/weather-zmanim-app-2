@@ -1,6 +1,12 @@
 const rawApiUrl = process.env.REACT_APP_API_URL || "/api";
 const API_URL = rawApiUrl.replace(/\/+$/, "");
 
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+const isNumber = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
 const getErrorMessage = async (
   response: Response,
   fallback: string
@@ -19,6 +25,78 @@ const getErrorMessage = async (
   } catch {
     return fallback;
   }
+};
+
+const ensureWeatherResponse = (data: unknown): WeatherResponse => {
+  const value = data as WeatherResponse;
+  if (!value || !isNonEmptyString(value.name)) {
+    throw new Error("Invalid weather response: missing name");
+  }
+  if (
+    !value.main ||
+    !isNumber(value.main.temp) ||
+    !isNumber(value.main.feels_like) ||
+    !isNumber(value.main.humidity)
+  ) {
+    throw new Error("Invalid weather response: missing main data");
+  }
+  if (!Array.isArray(value.weather) || !value.weather[0]?.description) {
+    throw new Error("Invalid weather response: missing weather details");
+  }
+  return value;
+};
+
+const ensureForecastResponse = (data: unknown): ForecastResponse => {
+  const value = data as ForecastResponse;
+  if (!Array.isArray(value.list)) {
+    throw new Error("Invalid forecast response: missing list");
+  }
+  if (
+    value.list.length > 0 &&
+    (!isNumber(value.list[0]?.dt) ||
+      !isNonEmptyString(value.list[0]?.dt_txt) ||
+      !isNumber(value.list[0]?.main?.temp))
+  ) {
+    throw new Error("Invalid forecast response: missing fields");
+  }
+  return value;
+};
+
+const ensureZmanimResponse = (data: unknown): ZmanimResponse => {
+  const value = data as ZmanimResponse;
+  const times = value?.times;
+  if (!times) {
+    throw new Error("Invalid zmanim response: missing times");
+  }
+  const requiredFields = [
+    "alotHaShachar",
+    "sunrise",
+    "sofZmanShma",
+    "sofZmanTfilla",
+    "chatzot",
+    "minchaGedola",
+    "plagHaMincha",
+    "sunset",
+    "tzeit"
+  ] as const;
+  for (const field of requiredFields) {
+    if (!isNonEmptyString(times[field])) {
+      throw new Error(`Invalid zmanim response: missing ${field}`);
+    }
+  }
+  return value;
+};
+
+const ensureHebrewDateResponse = (data: unknown): HebrewDateResponse => {
+  const value = data as HebrewDateResponse;
+  if (
+    !isNonEmptyString(value.hm) ||
+    (typeof value.hd !== "string" && typeof value.hd !== "number") ||
+    (typeof value.hy !== "string" && typeof value.hy !== "number")
+  ) {
+    throw new Error("Invalid Hebrew date response");
+  }
+  return value;
 };
 
 export interface WeatherResponse {
@@ -81,6 +159,11 @@ export interface HebrewDateResponse {
   cached?: boolean;
 }
 
+export interface HealthResponse {
+  status: string;
+  timestamp?: string;
+}
+
 export const api = {
   async getWeather(city: string): Promise<WeatherResponse> {
     const response = await fetch(
@@ -91,7 +174,8 @@ export const api = {
       throw new Error(await getErrorMessage(response, "Failed to fetch weather"));
     }
 
-    return response.json();
+    const data = await response.json();
+    return ensureWeatherResponse(data);
   },
 
   async getWeatherByCoords(
@@ -106,7 +190,8 @@ export const api = {
       throw new Error(await getErrorMessage(response, "Failed to fetch weather"));
     }
 
-    return response.json();
+    const data = await response.json();
+    return ensureWeatherResponse(data);
   },
 
   async getForecast(
@@ -121,7 +206,8 @@ export const api = {
       throw new Error(await getErrorMessage(response, "Failed to fetch forecast"));
     }
 
-    return response.json();
+    const data = await response.json();
+    return ensureForecastResponse(data);
   },
 
   async getZmanim(latitude: number, longitude: number): Promise<ZmanimResponse> {
@@ -133,7 +219,8 @@ export const api = {
       throw new Error(await getErrorMessage(response, "Failed to fetch zmanim"));
     }
 
-    return response.json();
+    const data = await response.json();
+    return ensureZmanimResponse(data);
   },
 
   async getHebrewDate(): Promise<HebrewDateResponse> {
@@ -145,6 +232,19 @@ export const api = {
       );
     }
 
-    return response.json();
+    const data = await response.json();
+    return ensureHebrewDateResponse(data);
+  },
+
+  async getHealth(): Promise<HealthResponse> {
+    const response = await fetch(`${API_URL}/health`);
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, "Health check failed"));
+    }
+    const data = (await response.json()) as HealthResponse;
+    if (!data || !isNonEmptyString(data.status)) {
+      throw new Error("Invalid health response");
+    }
+    return data;
   }
 };

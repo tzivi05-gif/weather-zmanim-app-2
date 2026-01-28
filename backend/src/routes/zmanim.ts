@@ -5,6 +5,34 @@ import { Cache } from "../utils/cache";
 
 const router = Router();
 
+type ZmanimPayload = {
+  times?: Record<string, string>;
+  location?: Record<string, unknown>;
+};
+
+const normalizeZmanim = (data: ZmanimPayload) => {
+  const rawTimes =
+    data?.times && typeof data.times === "object" ? data.times : {};
+
+  return {
+    ...data,
+    times: {
+      alotHaShachar: rawTimes.alotHaShachar || rawTimes.alotHashachar || "",
+      sunrise: rawTimes.sunrise || "",
+      sofZmanShma: rawTimes.sofZmanShma || rawTimes.sofZmanShema || "",
+      sofZmanTfilla: rawTimes.sofZmanTfilla || rawTimes.sofZmanTefilla || "",
+      chatzot: rawTimes.chatzot || "",
+      minchaGedola: rawTimes.minchaGedola || "",
+      plagHaMincha: rawTimes.plagHaMincha || "",
+      sunset: rawTimes.sunset || "",
+      tzeit: rawTimes.tzeit || "",
+      tzeit42min: rawTimes.tzeit42min || "",
+      tzeit50min: rawTimes.tzeit50min || "",
+      tzeit72min: rawTimes.tzeit72min || ""
+    }
+  };
+};
+
 const allowInsecureTls = process.env.BACKEND_INSECURE_TLS === "true";
 const insecureAgent = allowInsecureTls
   ? new https.Agent({ rejectUnauthorized: false })
@@ -26,8 +54,9 @@ router.get("/", async (req: Request, res: Response) => {
     const cached = Cache.get(cacheKey);
 
     if (cached) {
+      const normalized = normalizeZmanim(cached as ZmanimPayload);
       return res.json({
-        ...(cached as Record<string, unknown>),
+        ...(normalized as Record<string, unknown>),
         cached: true
       });
     }
@@ -43,12 +72,13 @@ router.get("/", async (req: Request, res: Response) => {
       });
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as ZmanimPayload;
+    const normalized = normalizeZmanim(data);
 
-    Cache.set(cacheKey, data, 12 * 60);
+    Cache.set(cacheKey, normalized, 12 * 60);
 
     res.json({
-      ...(data as Record<string, unknown>),
+      ...(normalized as Record<string, unknown>),
       cached: false
     });
   } catch (error) {

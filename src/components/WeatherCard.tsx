@@ -12,7 +12,9 @@ type WeatherCardProps = {
 
 function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps) {
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
-  const [forecast, setForecast] = useState<ForecastResponse["list"]>([]);
+  const [forecast, setForecast] = useState<
+    NonNullable<ForecastResponse["list"]>
+  >([]);
   const [hebrewDate, setHebrewDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [city, setCity] = useState(
@@ -41,18 +43,10 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
   useEffect(() => {
     if (!selectedCity) return;
 
-    if (selectedCity !== city) {
-      setCity(selectedCity);
-      setError(null);
-      fetchWeather(selectedCity);
-      return;
-    }
-
-    if (!weather) {
-      setError(null);
-      fetchWeather(selectedCity);
-    }
-  }, [selectedCity, city, weather]);
+    setCity(selectedCity);
+    setError(null);
+    fetchWeather(selectedCity);
+  }, [selectedCity]);
 
   useEffect(() => {
     if (!selectedLocation?.city) return;
@@ -66,12 +60,10 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
       return;
     }
 
-    if (selectedLocation.city !== city) {
-      setCity(selectedLocation.city);
-      setError(null);
-      fetchWeather(selectedLocation.city);
-    }
-  }, [selectedLocation, city]);
+    setCity(selectedLocation.city);
+    setError(null);
+    fetchWeather(selectedLocation.city);
+  }, [selectedLocation]);
 
   const fetchHebrewDate = async () => {
     try {
@@ -141,7 +133,10 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
   const fetchForecast = async (latitude: number, longitude: number) => {
     try {
       const data = await api.getForecast(latitude, longitude);
-      if (!data.list) return;
+      if (!data.list) {
+        setForecast([]);
+        return;
+      }
 
       const daily = data.list.filter((item) => item.dt_txt.includes("12:00:00"));
       setForecast(daily.slice(0, 5));

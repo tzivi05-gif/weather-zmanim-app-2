@@ -15,8 +15,12 @@ const PORT = Number(process.env.PORT) || 3001;
 const HOST = process.env.HOST || "0.0.0.0";
 
 // Middleware
-const allowedOrigins =
+const defaultAllowedOrigins = ["https://weather-zmanim-app-2.vercel.app"];
+const envAllowedOrigins =
   process.env.CORS_ORIGINS?.split(",").map((origin) => origin.trim()) || [];
+const allowedOrigins = Array.from(
+  new Set([...defaultAllowedOrigins, ...envAllowedOrigins].filter(Boolean))
+);
 
 app.use(
   cors({
@@ -27,10 +31,7 @@ app.use(
       if (!origin) {
         return callback(null, true);
       }
-      if (
-        origin === "https://weather-zmanim-app-2.vercel.app" ||
-        origin.endsWith(".vercel.app")
-      ) {
+      if (origin.endsWith(".vercel.app")) {
         return callback(null, true);
       }
       if (allowedOrigins.includes(origin)) {
@@ -53,6 +54,11 @@ app.use("/api/forecast", forecastRouter);
 app.use("/api/cache", cacheRouter);
 app.use("/api/hebrew-date", hebrewDateRouter);
 
+// API health check endpoint
+app.get("/api/health", (_req: Request, res: Response) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 if (process.env.NODE_ENV === "production") {
   const buildPath = path.join(__dirname, "../../build");
   if (fs.existsSync(buildPath)) {
@@ -69,7 +75,7 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // Health check endpoint
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
