@@ -11,15 +11,12 @@ import cacheRouter from "./routes/cache";
 import hebrewDateRouter from "./routes/hebrew-date";
 
 const app: Express = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 3001;
 const HOST = process.env.HOST || "0.0.0.0";
 
 // Middleware
-const rawCorsOrigins = process.env.CORS_ORIGINS ?? "";
-const corsOrigins = rawCorsOrigins
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins =
+  process.env.CORS_ORIGINS?.split(",").map((origin) => origin.trim()) || [];
 
 app.use(
   cors({
@@ -27,10 +24,16 @@ app.use(
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void
     ) => {
-      if (!origin || corsOrigins.length === 0) {
+      if (!origin) {
         return callback(null, true);
       }
-      if (corsOrigins.includes(origin)) {
+      if (
+        origin === "https://weather-zmanim-app-2.vercel.app" ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       return callback(new Error("Not allowed by CORS"));

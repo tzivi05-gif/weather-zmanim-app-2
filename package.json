@@ -19,6 +19,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:3001",
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/react": "^18.2.79",

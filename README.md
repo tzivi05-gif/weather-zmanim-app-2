@@ -15,29 +15,26 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
    - `npm --prefix backend install`
 
 ### Run the app
-- `npm run dev` starts the React app and backend API together.
-- Frontend runs on `http://localhost:3000`
-- Backend runs on `http://localhost:3001`
+- Frontend: `npm start` (runs on `http://localhost:3000`)
+- Backend: `npm --prefix backend run dev` (runs on `http://localhost:3001`)
 - The frontend proxies `/api` requests to the backend in development.
 
 ### Deploy / production
-- Build frontend + backend: `npm run build`
-- Start backend (serves the frontend build when `NODE_ENV=production`): `npm start`
+- Frontend (Vercel) and backend (Render) are deployed separately.
 - Make sure to set `OPENWEATHER_API_KEY` in the backend environment.
-- If the frontend is hosted separately, set `REACT_APP_API_URL` to your API base URL.
-- If the backend serves the frontend build, set `NODE_ENV=production` when starting the backend.
+- Set `REACT_APP_API_URL` in the frontend to your backend URL (include `/api`).
 
-### Deploy to Railway (backend)
-- Set the Railway root directory to `backend`.
-- Build command: `npm run build`
+### Deploy to Render (backend)
+- Set the Render root directory to `backend`.
+- Build command: `npm install && npm run build`
 - Start command: `npm start`
-- Environment variables: `OPENWEATHER_API_KEY` (required), `PORT` (Railway provides).
+- Environment variables: `OPENWEATHER_API_KEY` (required), `PORT` (Render provides), `CORS_ORIGINS` (your Vercel domain).
 
 ### Deploy to Vercel (frontend)
 - Set the Vercel root directory to the project root (the folder with `package.json`).
 - Build command: `npm run build`
 - Output directory: `build`
-- Environment variables: `REACT_APP_API_URL` set to your Railway backend URL (e.g. `https://your-app.up.railway.app/api`).
+- Environment variables: `REACT_APP_API_URL` set to your Render backend URL (e.g. `https://your-backend.onrender.com/api`).
 
 ## Available Scripts
 

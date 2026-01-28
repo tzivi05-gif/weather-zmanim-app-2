@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
+const rawApiUrl = process.env.REACT_APP_API_URL || "/api";
+const API_URL = rawApiUrl.replace(/\/+$/, "");
 
 const getErrorMessage = async (
   response: Response,
@@ -83,7 +84,7 @@ export interface HebrewDateResponse {
 export const api = {
   async getWeather(city: string): Promise<WeatherResponse> {
     const response = await fetch(
-      `${API_BASE_URL}/weather?city=${encodeURIComponent(city)}`
+      `${API_URL}/weather?city=${encodeURIComponent(city)}`
     );
 
     if (!response.ok) {
@@ -98,7 +99,7 @@ export const api = {
     longitude: number
   ): Promise<WeatherResponse> {
     const response = await fetch(
-      `${API_BASE_URL}/weather?lat=${latitude}&lon=${longitude}`
+      `${API_URL}/weather?lat=${latitude}&lon=${longitude}`
     );
 
     if (!response.ok) {
@@ -113,7 +114,7 @@ export const api = {
     longitude: number
   ): Promise<ForecastResponse> {
     const response = await fetch(
-      `${API_BASE_URL}/forecast?lat=${latitude}&lon=${longitude}`
+      `${API_URL}/forecast?lat=${latitude}&lon=${longitude}`
     );
 
     if (!response.ok) {
@@ -125,7 +126,7 @@ export const api = {
 
   async getZmanim(latitude: number, longitude: number): Promise<ZmanimResponse> {
     const response = await fetch(
-      `${API_BASE_URL}/zmanim?latitude=${latitude}&longitude=${longitude}`
+      `${API_URL}/zmanim?latitude=${latitude}&longitude=${longitude}`
     );
 
     if (!response.ok) {
@@ -136,7 +137,7 @@ export const api = {
   },
 
   async getHebrewDate(): Promise<HebrewDateResponse> {
-    const response = await fetch(`${API_BASE_URL}/hebrew-date`);
+    const response = await fetch(`${API_URL}/hebrew-date`);
 
     if (!response.ok) {
       throw new Error(
