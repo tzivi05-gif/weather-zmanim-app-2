@@ -31,16 +31,16 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
       try {
         const parsed = JSON.parse(saved) as unknown;
         if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter((entry): entry is Location => {
-            if (typeof entry !== "object" || entry === null) return false;
-            const candidate = entry as Location;
-            const validCity = typeof candidate.city === "string";
-            const validLat =
-              typeof candidate.latitude === "number" || candidate.latitude === null;
-            const validLon =
-              typeof candidate.longitude === "number" || candidate.longitude === null;
-            return validCity && validLat && validLon;
-          });
+          const cleaned = parsed
+            .filter((entry): entry is Location => {
+              if (typeof entry !== "object" || entry === null) return false;
+              const candidate = entry as Location;
+              return typeof candidate.city === "string";
+            })
+            .map((entry) => ({
+              id: typeof entry.id === "string" ? entry.id : entry.city,
+              city: entry.city
+            }));
           setFavorites(cleaned);
         }
       } catch {
@@ -72,9 +72,7 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
 
     const newLocation: Location = {
       id: Date.now().toString(),
-      city: trimmedCity,
-      latitude: null,
-      longitude: null
+      city: trimmedCity
     };
 
     setFavorites((prev) => [...prev, newLocation]);

@@ -22,20 +22,6 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
 
   useEffect(() => {
     fetchHebrewDate();
-
-    if (!navigator.geolocation) {
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        fetchZmanimByCoords(latitude, longitude);
-      },
-      () => {
-        // Ignore if the user blocks location access.
-      }
-    );
   }, []);
 
   useEffect(() => {
@@ -48,16 +34,6 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
 
   useEffect(() => {
     if (!selectedLocation?.city) return;
-
-    const { latitude, longitude } = selectedLocation;
-
-    if (typeof latitude === "number" && typeof longitude === "number") {
-      setCity(selectedLocation.city);
-      setError(null);
-      fetchZmanimByCoords(latitude, longitude);
-      return;
-    }
-
     setCity(selectedLocation.city);
     setError(null);
     fetchZmanim(selectedLocation.city);

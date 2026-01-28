@@ -24,20 +24,6 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
 
   useEffect(() => {
     fetchHebrewDate();
-
-    if (!navigator.geolocation) {
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        fetchWeatherByCoords(latitude, longitude);
-      },
-      () => {
-        // Ignore if the user blocks location access.
-      }
-    );
   }, []);
 
   useEffect(() => {
@@ -50,16 +36,6 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
 
   useEffect(() => {
     if (!selectedLocation?.city) return;
-
-    const { latitude, longitude } = selectedLocation;
-
-    if (typeof latitude === "number" && typeof longitude === "number") {
-      setCity(selectedLocation.city);
-      setError(null);
-      fetchWeatherByCoords(latitude, longitude);
-      return;
-    }
-
     setCity(selectedLocation.city);
     setError(null);
     fetchWeather(selectedLocation.city);
