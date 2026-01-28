@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import Card from "./Card";
-import { Theme } from "../themes";
-import { Location } from "../types/location";
+import { useEffect, useState } from "react";
+import "./Card.css";
+import type { Theme } from "../themes";
+import type { Location } from "../types/location";
 import { api, ZmanimResponse } from "../services/api";
 
 type ZmanimCardProps = {
@@ -10,30 +10,20 @@ type ZmanimCardProps = {
   selectedLocation?: Location | null;
 };
 
-type LocalLocation = {
-  city: string;
-  latitude: number | null;
-  longitude: number | null;
-};
-
 function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) {
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState(
+    selectedCity ?? selectedLocation?.city ?? ""
+  );
   const [zmanim, setZmanim] = useState<ZmanimResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tzid, setTzid] = useState("");
   const [hebrewDate, setHebrewDate] = useState("");
-  const [location, setLocation] = useState<LocalLocation>({
-    city: "",
-    latitude: null,
-    longitude: null
-  });
 
   useEffect(() => {
     fetchHebrewDate();
 
     if (!navigator.geolocation) {
-      setError("Geolocation not supported");
       return;
     }
 
@@ -43,32 +33,34 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
         fetchZmanimByCoords(latitude, longitude);
       },
       () => {
-        console.warn("User denied location for Zmanim");
+        // Ignore if the user blocks location access.
       }
     );
   }, []);
 
   useEffect(() => {
-    if (selectedCity && selectedCity !== city) {
-      setCity(selectedCity);
-      setError(null);
-    }
-  }, [selectedCity, city]);
+    if (!selectedCity) return;
+
+    setCity(selectedCity);
+    setError(null);
+    fetchZmanim(selectedCity);
+  }, [selectedCity]);
 
   useEffect(() => {
-    if (!selectedLocation) return;
+    if (!selectedLocation?.city) return;
 
     const { latitude, longitude } = selectedLocation;
-    setLocation({
-      city: selectedLocation.city,
-      latitude,
-      longitude
-    });
-    setError(null);
-    setCity(selectedLocation.city);
+
     if (typeof latitude === "number" && typeof longitude === "number") {
+      setCity(selectedLocation.city);
+      setError(null);
       fetchZmanimByCoords(latitude, longitude);
+      return;
     }
+
+    setCity(selectedLocation.city);
+    setError(null);
+    fetchZmanim(selectedLocation.city);
   }, [selectedLocation]);
 
   const fetchHebrewDate = async () => {
@@ -103,24 +95,27 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     }
   };
 
-  const fetchZmanim = async () => {
-    if (!city.trim()) return;
+  const fetchZmanim = async (cityToFetch?: string) => {
+    const targetCity = (cityToFetch ?? city).trim();
+    if (!targetCity) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const weatherData = await api.getWeather(city);
+      const weatherData = await api.getWeather(targetCity);
       const coords = weatherData.coord;
 
       if (!coords) throw new Error("Coordinates not found for that city.");
 
       await fetchZmanimByCoords(coords.lat, coords.lon);
     } catch (err) {
-      console.error(err);
-      setError("Could not load zmanim for that city.");
       setZmanim(null);
       setTzid("");
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch zmanim";
+      setError(message);
+      console.error("Error fetching zmanim:", err);
     } finally {
       setLoading(false);
     }
@@ -140,12 +135,13 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   };
 
   return (
-    <Card
-      isLoading={loading}
+    <div
+      className="card"
       style={{
         backgroundColor: theme.zmanimCardBackground,
         border: `2px solid ${theme.zmanimCardBorder}`,
-        color: theme.text
+        color: theme.text,
+        position: "relative"
       }}
     >
       <div className="left">
@@ -155,7 +151,10 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
         <div className="input-row">
           <input
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(e) => {
+              setCity(e.target.value);
+              setError(null);
+            }}
             onKeyDown={(e) => e.key === "Enter" && fetchZmanim()}
             placeholder="Enter city"
             style={{
@@ -165,7 +164,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
             }}
           />
           <button
-            onClick={fetchZmanim}
+            onClick={() => fetchZmanim()}
             disabled={loading}
             style={{
               backgroundColor: theme.zmanimCardBorder,
@@ -227,7 +226,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
           </>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 

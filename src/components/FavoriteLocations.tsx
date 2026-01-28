@@ -10,11 +10,9 @@ interface FavoriteLocationsProps {
 function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) {
   const [favorites, setFavorites] = useState<Location[]>([]);
   const [newCity, setNewCity] = useState("");
-  const [newLat, setNewLat] = useState("");
-  const [newLon, setNewLon] = useState("");
   const [error, setError] = useState<string | null>(null);
   const storageKey = "favoriteLocations";
-  const isAddDisabled = !newCity.trim() || !newLat.trim() || !newLon.trim();
+  const isAddDisabled = !newCity.trim();
   const addButtonStyle: CSSProperties = {
     padding: "8px 16px",
     margin: "5px",
@@ -58,30 +56,13 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
 
   const addFavorite = () => {
     const trimmedCity = newCity.trim();
-    if (!trimmedCity || !newLat || !newLon) {
-      setError("Please fill in all fields");
-      return;
-    }
-
-    const latitude = Number.parseFloat(newLat);
-    const longitude = Number.parseFloat(newLon);
-
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-      setError("Please enter valid coordinates");
-      return;
-    }
-
-    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-      setError("Coordinates are out of range");
+    if (!trimmedCity) {
+      setError("Please enter a city name");
       return;
     }
 
     const duplicate = favorites.some((favorite) => {
-      const sameCity =
-        favorite.city.trim().toLowerCase() === trimmedCity.toLowerCase();
-      const sameCoords =
-        favorite.latitude === latitude && favorite.longitude === longitude;
-      return sameCity || sameCoords;
+      return favorite.city.trim().toLowerCase() === trimmedCity.toLowerCase();
     });
 
     if (duplicate) {
@@ -92,14 +73,12 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
     const newLocation: Location = {
       id: Date.now().toString(),
       city: trimmedCity,
-      latitude,
-      longitude
+      latitude: null,
+      longitude: null
     };
 
     setFavorites((prev) => [...prev, newLocation]);
     setNewCity("");
-    setNewLat("");
-    setNewLon("");
     setError(null);
   };
 
@@ -143,48 +122,6 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
             borderRadius: "4px"
           }}
         />
-        <input
-          type="number"
-          placeholder="Latitude"
-          value={newLat}
-          onChange={(e) => {
-            setNewLat(e.target.value);
-            setError(null);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && addFavorite()}
-          step="0.0001"
-          aria-label="Latitude"
-          style={{
-            padding: "8px",
-            margin: "5px",
-            width: "120px",
-            backgroundColor: theme.background,
-            color: theme.text,
-            border: `1px solid ${theme.cardBorder}`,
-            borderRadius: "4px"
-          }}
-        />
-        <input
-          type="number"
-          placeholder="Longitude"
-          value={newLon}
-          onChange={(e) => {
-            setNewLon(e.target.value);
-            setError(null);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && addFavorite()}
-          step="0.0001"
-          aria-label="Longitude"
-          style={{
-            padding: "8px",
-            margin: "5px",
-            width: "120px",
-            backgroundColor: theme.background,
-            color: theme.text,
-            border: `1px solid ${theme.cardBorder}`,
-            borderRadius: "4px"
-          }}
-        />
         <button
           onClick={addFavorite}
           disabled={isAddDisabled}
@@ -219,17 +156,6 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
               >
                 <span>
                   <strong>{location.city}</strong>
-                  <br />
-                  <small>
-                    Lat:{" "}
-                    {location.latitude === null
-                      ? "N/A"
-                      : location.latitude.toFixed(4)}
-                    , Lon:{" "}
-                    {location.longitude === null
-                      ? "N/A"
-                      : location.longitude.toFixed(4)}
-                  </small>
                 </span>
                 <div>
                   <button
@@ -268,18 +194,6 @@ function FavoriteLocations({ theme, onSelectLocation }: FavoriteLocationsProps) 
         )}
       </div>
 
-      <p style={{ marginTop: "20px", fontSize: "12px", opacity: 0.7 }}>
-        💡 Tip: Use{" "}
-        <a
-          href="https://www.latlong.net/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: theme.text }}
-        >
-          latlong.net
-        </a>{" "}
-        to find coordinates for any city
-      </p>
     </div>
   );
 }
