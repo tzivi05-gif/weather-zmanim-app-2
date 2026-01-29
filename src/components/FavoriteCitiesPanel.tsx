@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Card from "./Card";
-import type { Theme } from "../types";
-import type { Location } from "../types";
+import type { Theme } from "../themes";
 
 const WEATHER_KEY = "favoriteWeatherCities";
 const ZMANIM_KEY = "favoriteZmanimCities";
@@ -22,28 +21,24 @@ function FavoriteCitiesPanel({
   const [newWeatherCity, setNewWeatherCity] = useState("");
   const [newZmanimCity, setNewZmanimCity] = useState("");
 
-  // Load saved favorites from localStorage
+  // Load favorites from localStorage
   useEffect(() => {
     try {
       const savedWeather = localStorage.getItem(WEATHER_KEY);
-      if (savedWeather) setWeatherCities(JSON.parse(savedWeather));
-    } catch {}
-    try {
       const savedZmanim = localStorage.getItem(ZMANIM_KEY);
+
+      if (savedWeather) setWeatherCities(JSON.parse(savedWeather));
       if (savedZmanim) setZmanimCities(JSON.parse(savedZmanim));
-    } catch {}
+    } catch {
+      setWeatherCities([]);
+      setZmanimCities([]);
+    }
   }, []);
 
-  // Save favorites whenever they change
-  useEffect(() => {
-    localStorage.setItem(WEATHER_KEY, JSON.stringify(weatherCities));
-  }, [weatherCities]);
+  // Persist favorites to localStorage
+  useEffect(() => localStorage.setItem(WEATHER_KEY, JSON.stringify(weatherCities)), [weatherCities]);
+  useEffect(() => localStorage.setItem(ZMANIM_KEY, JSON.stringify(zmanimCities)), [zmanimCities]);
 
-  useEffect(() => {
-    localStorage.setItem(ZMANIM_KEY, JSON.stringify(zmanimCities));
-  }, [zmanimCities]);
-
-  // Add a city to favorites
   const addCity = (
     newCity: string,
     cities: string[],
@@ -60,15 +55,11 @@ function FavoriteCitiesPanel({
     setNewCity("");
   };
 
-  // Remove a city from favorites
   const removeCity = (
     cityToRemove: string,
     setCities: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    setCities((prev) => prev.filter((city) => city !== cityToRemove));
-  };
+  ) => setCities((prev) => prev.filter((c) => c !== cityToRemove));
 
-  // Render favorite list with Use + Remove buttons
   const renderList = (
     cities: string[],
     onSelectCity: (city: string) => void,
@@ -122,7 +113,6 @@ function FavoriteCitiesPanel({
     >
       <div className="favorites-panel">
         <div className="favorites-grid">
-          {/* Weather Favorites */}
           <div className="favorites-section">
             <h3>Weather Favorites</h3>
             <div className="input-row">
@@ -131,19 +121,9 @@ function FavoriteCitiesPanel({
                 onChange={(e) => setNewWeatherCity(e.target.value)}
                 onKeyDown={(e) =>
                   e.key === "Enter" &&
-                  addCity(
-                    newWeatherCity,
-                    weatherCities,
-                    setWeatherCities,
-                    setNewWeatherCity
-                  )
+                  addCity(newWeatherCity, weatherCities, setWeatherCities, setNewWeatherCity)
                 }
                 placeholder="Add a weather city"
-                autoComplete="off"
-                name="weather-fav-city"
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck={false}
                 style={{
                   backgroundColor: theme.background,
                   color: theme.text,
@@ -151,14 +131,7 @@ function FavoriteCitiesPanel({
                 }}
               />
               <button
-                onClick={() =>
-                  addCity(
-                    newWeatherCity,
-                    weatherCities,
-                    setWeatherCities,
-                    setNewWeatherCity
-                  )
-                }
+                onClick={() => addCity(newWeatherCity, weatherCities, setWeatherCities, setNewWeatherCity)}
                 style={{
                   backgroundColor: theme.weatherCardBorder,
                   color: "#fff"
@@ -167,15 +140,11 @@ function FavoriteCitiesPanel({
                 Add
               </button>
             </div>
-
-            {weatherCities.length === 0 ? (
-              <p className="subtle">No weather favorites yet.</p>
-            ) : (
-              renderList(weatherCities, onSelectWeatherCity, setWeatherCities)
-            )}
+            {weatherCities.length === 0
+              ? <p className="subtle">No weather favorites yet.</p>
+              : renderList(weatherCities, onSelectWeatherCity, setWeatherCities)}
           </div>
 
-          {/* Zmanim Favorites */}
           <div className="favorites-section">
             <h3>Zmanim Favorites</h3>
             <div className="input-row">
@@ -184,19 +153,9 @@ function FavoriteCitiesPanel({
                 onChange={(e) => setNewZmanimCity(e.target.value)}
                 onKeyDown={(e) =>
                   e.key === "Enter" &&
-                  addCity(
-                    newZmanimCity,
-                    zmanimCities,
-                    setZmanimCities,
-                    setNewZmanimCity
-                  )
+                  addCity(newZmanimCity, zmanimCities, setZmanimCities, setNewZmanimCity)
                 }
                 placeholder="Add a zmanim city"
-                autoComplete="off"
-                name="zmanim-fav-city"
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck={false}
                 style={{
                   backgroundColor: theme.background,
                   color: theme.text,
@@ -204,14 +163,7 @@ function FavoriteCitiesPanel({
                 }}
               />
               <button
-                onClick={() =>
-                  addCity(
-                    newZmanimCity,
-                    zmanimCities,
-                    setZmanimCities,
-                    setNewZmanimCity
-                  )
-                }
+                onClick={() => addCity(newZmanimCity, zmanimCities, setZmanimCities, setNewZmanimCity)}
                 style={{
                   backgroundColor: theme.zmanimCardBorder,
                   color: "#fff"
@@ -220,12 +172,9 @@ function FavoriteCitiesPanel({
                 Add
               </button>
             </div>
-
-            {zmanimCities.length === 0 ? (
-              <p className="subtle">No zmanim favorites yet.</p>
-            ) : (
-              renderList(zmanimCities, onSelectZmanimCity, setZmanimCities)
-            )}
+            {zmanimCities.length === 0
+              ? <p className="subtle">No zmanim favorites yet.</p>
+              : renderList(zmanimCities, onSelectZmanimCity, setZmanimCities)}
           </div>
         </div>
       </div>

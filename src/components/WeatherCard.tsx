@@ -58,6 +58,11 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
     const targetCity = (cityToFetch ?? city).trim();
     if (!targetCity) return;
 
+    
+    // Prevent flicker: don't set loading if we already have weather for this city
+    if (weather?.name?.toLowerCase() === targetCity.toLowerCase()) return;
+
+
     setLoading(true);
     setError(null);
     try {
