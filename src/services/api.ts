@@ -1,5 +1,16 @@
-const rawApiUrl = process.env.REACT_APP_API_URL || "/api";
-const API_URL = rawApiUrl.replace(/\/+$/, "");
+const defaultApiUrl = "/api";
+const envApiUrl = process.env.REACT_APP_API_URL;
+const rawApiUrl =
+  envApiUrl && envApiUrl.trim().length > 0 ? envApiUrl : defaultApiUrl;
+const normalizedApiUrl = rawApiUrl.replace(/\/+$/, "");
+const isLocalhost =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1");
+const API_URL =
+  isLocalhost && normalizedApiUrl.includes("vercel.app")
+    ? defaultApiUrl
+    : normalizedApiUrl;
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;

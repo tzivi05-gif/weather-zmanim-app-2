@@ -12,23 +12,27 @@ type WeatherCardProps = {
 
 function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps) {
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
-  const [forecast, setForecast] = useState<
-    NonNullable<ForecastResponse["list"]>
-  >([]);
+  const [forecast, setForecast] = useState<NonNullable<ForecastResponse["list"]>>([]);
   const [hebrewDate, setHebrewDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [city, setCity] = useState(
-    selectedCity ?? selectedLocation?.city ?? ""
-  );
+  const [city, setCity] = useState(selectedCity ?? selectedLocation?.city ?? "");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchHebrewDate();
-  }, []);
+
+    // ⬇️ Only use geolocation if no favorite/selection exists
+    if (selectedCity || selectedLocation) return;
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude } = position.coords;
+      fetchWeatherByCoords(latitude, longitude);
+    });
+  }, [selectedCity, selectedLocation]);
 
   useEffect(() => {
     if (!selectedCity) return;
-
     setCity(selectedCity);
     setError(null);
     fetchWeather(selectedCity);
@@ -56,16 +60,11 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
 
     setLoading(true);
     setError(null);
-
     try {
       const data = await api.getWeather(targetCity);
       setWeather(data);
       setCity(data.name || targetCity);
       setForecast([]);
-
-      if (data.cached) {
-        console.log("✅ Weather loaded from cache");
-      }
 
       if (data.coord) {
         await fetchForecast(data.coord.lat, data.coord.lon);
@@ -84,16 +83,10 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
   const fetchWeatherByCoords = async (latitude: number, longitude: number) => {
     setLoading(true);
     setError(null);
-
     try {
       const data = await api.getWeatherByCoords(latitude, longitude);
       setWeather(data);
       setCity(data.name || city);
-
-      if (data.cached) {
-        console.log("✅ Weather loaded from cache");
-      }
-
       await fetchForecast(latitude, longitude);
     } catch (err) {
       setWeather(null);
@@ -113,7 +106,6 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
         setForecast([]);
         return;
       }
-
       const daily = data.list.filter((item) => item.dt_txt.includes("12:00:00"));
       setForecast(daily.slice(0, 5));
     } catch {
@@ -134,22 +126,6 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
         position: "relative"
       }}
     >
-      {weather?.cached && (
-        <div
-          style={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontSize: "12px"
-          }}
-        >
-          📦 Cached
-        </div>
-      )}
       <div className="left">
         <h2>🌤 Weather</h2>
         <p className="subtle">{hebrewDate && `📅 ${hebrewDate}`}</p>
@@ -188,21 +164,12 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
         {weather && !error && (
           <>
             <h3>{weather.name}</h3>
-            <div className="weather-main">
-              {weather.weather?.[0]?.icon && (
-                <img
-                  className="weather-icon"
-                  src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
-                  alt={weather.weather[0].description}
-                />
-              )}
-              <p className="subtle">{weather.weather?.[0]?.description}</p>
-            </div>
             <p>Temperature: {Math.round(weather.main.temp)}°F</p>
             <p>Feels like: {Math.round(weather.main.feels_like)}°F</p>
             <p>Conditions: {weather.weather[0].description}</p>
             <p>Humidity: {weather.main.humidity}%</p>
-            {forecast && forecast.length > 0 && (
+
+            {forecast.length > 0 && (
               <div className="forecast-grid">
                 {forecast.map((day) => (
                   <div
@@ -215,10 +182,6 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
                     }}
                   >
                     <div className="date">{formatDay(day.dt)}</div>
-                    <img
-                      src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
-                      alt=""
-                    />
                     <div>{Math.round(day.main.temp)}°F</div>
                   </div>
                 ))}

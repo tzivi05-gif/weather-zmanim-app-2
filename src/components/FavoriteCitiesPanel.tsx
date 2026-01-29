@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Card from "./Card";
 import type { Theme } from "../types";
+import type { Location } from "../types";
 
 const WEATHER_KEY = "favoriteWeatherCities";
 const ZMANIM_KEY = "favoriteZmanimCities";
@@ -21,29 +22,19 @@ function FavoriteCitiesPanel({
   const [newWeatherCity, setNewWeatherCity] = useState("");
   const [newZmanimCity, setNewZmanimCity] = useState("");
 
+  // Load saved favorites from localStorage
   useEffect(() => {
-    const savedWeather = localStorage.getItem(WEATHER_KEY);
-    const savedZmanim = localStorage.getItem(ZMANIM_KEY);
-
     try {
-      const parsedWeather = savedWeather ? JSON.parse(savedWeather) : [];
-      if (Array.isArray(parsedWeather)) {
-        setWeatherCities(parsedWeather);
-      }
-    } catch {
-      setWeatherCities([]);
-    }
-
+      const savedWeather = localStorage.getItem(WEATHER_KEY);
+      if (savedWeather) setWeatherCities(JSON.parse(savedWeather));
+    } catch {}
     try {
-      const parsedZmanim = savedZmanim ? JSON.parse(savedZmanim) : [];
-      if (Array.isArray(parsedZmanim)) {
-        setZmanimCities(parsedZmanim);
-      }
-    } catch {
-      setZmanimCities([]);
-    }
+      const savedZmanim = localStorage.getItem(ZMANIM_KEY);
+      if (savedZmanim) setZmanimCities(JSON.parse(savedZmanim));
+    } catch {}
   }, []);
 
+  // Save favorites whenever they change
   useEffect(() => {
     localStorage.setItem(WEATHER_KEY, JSON.stringify(weatherCities));
   }, [weatherCities]);
@@ -52,6 +43,7 @@ function FavoriteCitiesPanel({
     localStorage.setItem(ZMANIM_KEY, JSON.stringify(zmanimCities));
   }, [zmanimCities]);
 
+  // Add a city to favorites
   const addCity = (
     newCity: string,
     cities: string[],
@@ -60,16 +52,15 @@ function FavoriteCitiesPanel({
   ) => {
     const trimmed = newCity.trim();
     if (!trimmed) return;
-
     if (cities.some((city) => city.toLowerCase() === trimmed.toLowerCase())) {
       setNewCity("");
       return;
     }
-
     setCities((prev) => [...prev, trimmed]);
     setNewCity("");
   };
 
+  // Remove a city from favorites
   const removeCity = (
     cityToRemove: string,
     setCities: React.Dispatch<React.SetStateAction<string[]>>
@@ -77,6 +68,7 @@ function FavoriteCitiesPanel({
     setCities((prev) => prev.filter((city) => city !== cityToRemove));
   };
 
+  // Render favorite list with Use + Remove buttons
   const renderList = (
     cities: string[],
     onSelectCity: (city: string) => void,
@@ -130,6 +122,7 @@ function FavoriteCitiesPanel({
     >
       <div className="favorites-panel">
         <div className="favorites-grid">
+          {/* Weather Favorites */}
           <div className="favorites-section">
             <h3>Weather Favorites</h3>
             <div className="input-row">
@@ -146,6 +139,11 @@ function FavoriteCitiesPanel({
                   )
                 }
                 placeholder="Add a weather city"
+                autoComplete="off"
+                name="weather-fav-city"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 style={{
                   backgroundColor: theme.background,
                   color: theme.text,
@@ -177,6 +175,7 @@ function FavoriteCitiesPanel({
             )}
           </div>
 
+          {/* Zmanim Favorites */}
           <div className="favorites-section">
             <h3>Zmanim Favorites</h3>
             <div className="input-row">
@@ -193,6 +192,11 @@ function FavoriteCitiesPanel({
                   )
                 }
                 placeholder="Add a zmanim city"
+                autoComplete="off"
+                name="zmanim-fav-city"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 style={{
                   backgroundColor: theme.background,
                   color: theme.text,

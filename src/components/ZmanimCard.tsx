@@ -11,9 +11,7 @@ type ZmanimCardProps = {
 };
 
 function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) {
-  const [city, setCity] = useState(
-    selectedCity ?? selectedLocation?.city ?? ""
-  );
+  const [city, setCity] = useState(selectedCity ?? selectedLocation?.city ?? "");
   const [zmanim, setZmanim] = useState<ZmanimResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,11 +20,19 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
 
   useEffect(() => {
     fetchHebrewDate();
-  }, []);
+
+    // ⬇️ Only use geolocation if no favorite/selection exists
+    if (selectedCity || selectedLocation) return;
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const { latitude, longitude } = pos.coords;
+      fetchZmanimByCoords(latitude, longitude);
+    });
+  }, [selectedCity, selectedLocation]);
 
   useEffect(() => {
     if (!selectedCity) return;
-
     setCity(selectedCity);
     setError(null);
     fetchZmanim(selectedCity);
@@ -51,14 +57,11 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   const fetchZmanimByCoords = async (lat: number, lon: number) => {
     setLoading(true);
     setError(null);
-
     try {
       const zmanimData = await api.getZmanim(lat, lon);
-
       if (!zmanimData.times || Object.keys(zmanimData.times).length === 0) {
         throw new Error("No zmanim data available");
       }
-
       setZmanim(zmanimData);
       setTzid(zmanimData.location?.tzid || "UTC");
     } catch (err) {
@@ -77,13 +80,10 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
 
     setLoading(true);
     setError(null);
-
     try {
       const weatherData = await api.getWeather(targetCity);
       const coords = weatherData.coord;
-
       if (!coords) throw new Error("Coordinates not found for that city.");
-
       await fetchZmanimByCoords(coords.lat, coords.lon);
     } catch (err) {
       setZmanim(null);
@@ -99,9 +99,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
 
   const formatTime = (timeString?: string) => {
     if (!timeString || !tzid) return "—";
-
     const date = new Date(timeString);
-
     return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -158,38 +156,14 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
         {zmanim && !error && (
           <>
             <h3>{city}</h3>
-
-            <p>
-              <strong>Alot Hashachar:</strong>{" "}
-              {formatTime(zmanim.times?.alotHaShachar)}
-            </p>
-            <p>
-              <strong>Sunrise (Netz):</strong>{" "}
-              {formatTime(zmanim.times?.sunrise)}
-            </p>
-            <p>
-              <strong>Latest Shema:</strong>{" "}
-              {formatTime(zmanim.times?.sofZmanShma)}
-            </p>
-            <p>
-              <strong>Latest Tefillah:</strong>{" "}
-              {formatTime(zmanim.times?.sofZmanTfilla)}
-            </p>
-            <p>
-              <strong>Chatzot:</strong> {formatTime(zmanim.times?.chatzot)}
-            </p>
-            <p>
-              <strong>Mincha Gedola:</strong>{" "}
-              {formatTime(zmanim.times?.minchaGedola)}
-            </p>
-            <p>
-              <strong>Plag HaMincha:</strong>{" "}
-              {formatTime(zmanim.times?.plagHaMincha)}
-            </p>
-            <p>
-              <strong>Sunset (Shkiah):</strong>{" "}
-              {formatTime(zmanim.times?.sunset)}
-            </p>
+            <p><strong>Alot Hashachar:</strong> {formatTime(zmanim.times?.alotHaShachar)}</p>
+            <p><strong>Sunrise (Netz):</strong> {formatTime(zmanim.times?.sunrise)}</p>
+            <p><strong>Latest Shema:</strong> {formatTime(zmanim.times?.sofZmanShma)}</p>
+            <p><strong>Latest Tefillah:</strong> {formatTime(zmanim.times?.sofZmanTfilla)}</p>
+            <p><strong>Chatzot:</strong> {formatTime(zmanim.times?.chatzot)}</p>
+            <p><strong>Mincha Gedola:</strong> {formatTime(zmanim.times?.minchaGedola)}</p>
+            <p><strong>Plag HaMincha:</strong> {formatTime(zmanim.times?.plagHaMincha)}</p>
+            <p><strong>Sunset (Shkiah):</strong> {formatTime(zmanim.times?.sunset)}</p>
             <p>
               <strong>Nightfall (Tzeit):</strong>{" "}
               {formatTime(
