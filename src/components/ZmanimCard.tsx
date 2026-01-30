@@ -18,31 +18,36 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   const [tzid, setTzid] = useState("");
   const [hebrewDate, setHebrewDate] = useState("");
 
+  // Load Hebrew date on mount
   useEffect(() => {
     fetchHebrewDate();
+  }, []);
 
-    // ⬇️ Only use geolocation if no favorite/selection exists
-    if (selectedCity || selectedLocation) return;
-    if (!navigator.geolocation) return;
-
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const { latitude, longitude } = pos.coords;
-      fetchZmanimByCoords(latitude, longitude);
-    });
-  }, [selectedCity, selectedLocation]);
-
+  // Update when selectedCity changes
   useEffect(() => {
     if (!selectedCity) return;
     setCity(selectedCity);
     setError(null);
-    fetchZmanim(selectedCity);
+    fetchZmanimByCity(selectedCity);
   }, [selectedCity]);
 
+  // Update when selectedLocation changes (from favorites)
   useEffect(() => {
     if (!selectedLocation?.city) return;
-    setCity(selectedLocation.city);
+
+    const locCity = selectedLocation.city;
+    const latitude = (selectedLocation as any)?.latitude;
+    const longitude = (selectedLocation as any)?.longitude;
+
+    setCity(locCity);
     setError(null);
-    fetchZmanim(selectedLocation.city);
+
+    // Use coordinates if available, else fallback to city
+    if (typeof latitude === "number" && typeof longitude === "number") {
+      fetchZmanimByCoords(latitude, longitude);
+    } else {
+      fetchZmanimByCity(locCity);
+    }
   }, [selectedLocation]);
 
   const fetchHebrewDate = async () => {
@@ -58,40 +63,40 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     setLoading(true);
     setError(null);
     try {
-      const zmanimData = await api.getZmanim(lat, lon);
-      if (!zmanimData.times || Object.keys(zmanimData.times).length === 0) {
-        throw new Error("No zmanim data available");
-      }
-      setZmanim(zmanimData);
-      setTzid(zmanimData.location?.tzid || "UTC");
+      const data = await api.getZmanim(lat, lon);
+      setZmanim(data);
+      setTzid(data.location?.tzid || "UTC");
     } catch (err) {
-      console.error(err);
-      setError("Could not load zmanim for your location.");
+      console.error("Zmanim fetch by coords failed:", err);
       setZmanim(null);
       setTzid("");
+      const message = err instanceof Error ? err.message : "Failed to fetch zmanim";
+      setError(`❌ ${message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchZmanim = async (cityToFetch?: string) => {
+  const fetchZmanimByCity = async (cityToFetch?: string) => {
     const targetCity = (cityToFetch ?? city).trim();
     if (!targetCity) return;
 
     setLoading(true);
     setError(null);
+
     try {
+      // Get coordinates via Weather API
       const weatherData = await api.getWeather(targetCity);
       const coords = weatherData.coord;
-      if (!coords) throw new Error("Coordinates not found for that city.");
+      if (!coords) throw new Error("Coordinates not found for this city.");
+
       await fetchZmanimByCoords(coords.lat, coords.lon);
     } catch (err) {
+      console.error("Zmanim fetch by city failed:", err);
       setZmanim(null);
       setTzid("");
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch zmanim";
-      setError(message);
-      console.error("Error fetching zmanim:", err);
+      const message = err instanceof Error ? err.message : "Failed to fetch zmanim";
+      setError(`❌ ${message}`);
     } finally {
       setLoading(false);
     }
@@ -129,7 +134,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
               setCity(e.target.value);
               setError(null);
             }}
-            onKeyDown={(e) => e.key === "Enter" && fetchZmanim()}
+            onKeyDown={(e) => e.key === "Enter" && fetchZmanimByCity()}
             placeholder="Enter city"
             style={{
               backgroundColor: theme.cardBackground,
@@ -138,7 +143,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
             }}
           />
           <button
-            onClick={() => fetchZmanim()}
+            onClick={() => fetchZmanimByCity()}
             disabled={loading}
             style={{
               backgroundColor: theme.zmanimCardBorder,
@@ -149,7 +154,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
           </button>
         </div>
 
-        {error && <p className="error">❌ {error}</p>}
+        {error && <p className="error">{error}</p>}
       </div>
 
       <div className="right zmanim-list">
@@ -164,15 +169,9 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
             <p><strong>Mincha Gedola:</strong> {formatTime(zmanim.times?.minchaGedola)}</p>
             <p><strong>Plag HaMincha:</strong> {formatTime(zmanim.times?.plagHaMincha)}</p>
             <p><strong>Sunset (Shkiah):</strong> {formatTime(zmanim.times?.sunset)}</p>
-            <p>
-              <strong>Nightfall (Tzeit):</strong>{" "}
-              {formatTime(
-                zmanim.times?.tzeit ||
-                  zmanim.times?.tzeit42min ||
-                  zmanim.times?.tzeit50min ||
-                  zmanim.times?.tzeit72min
-              )}
-            </p>
+            <p><strong>Nightfall (Tzeit):</strong> {formatTime(
+              zmanim.times?.tzeit || zmanim.times?.tzeit42min || zmanim.times?.tzeit50min || zmanim.times?.tzeit72min
+            )}</p>
           </>
         )}
       </div>

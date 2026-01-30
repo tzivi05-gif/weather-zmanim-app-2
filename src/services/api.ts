@@ -29,9 +29,7 @@ const getErrorMessage = async (
       const data = JSON.parse(text) as { error?: string; message?: string };
       if (data?.error) return data.error;
       if (data?.message) return data.message;
-    } catch {
-      // Non-JSON response body, fall through to raw text.
-    }
+    } catch {}
     return text;
   } catch {
     return fallback;
@@ -76,9 +74,11 @@ const ensureForecastResponse = (data: unknown): ForecastResponse => {
 const ensureZmanimResponse = (data: unknown): ZmanimResponse => {
   const value = data as ZmanimResponse;
   const times = value?.times;
+
   if (!times) {
     throw new Error("Invalid zmanim response: missing times");
   }
+
   const requiredFields = [
     "alotHaShachar",
     "sunrise",
@@ -87,14 +87,24 @@ const ensureZmanimResponse = (data: unknown): ZmanimResponse => {
     "chatzot",
     "minchaGedola",
     "plagHaMincha",
-    "sunset",
-    "tzeit"
+    "sunset"
   ] as const;
+
   for (const field of requiredFields) {
     if (!isNonEmptyString(times[field])) {
       throw new Error(`Invalid zmanim response: missing ${field}`);
     }
   }
+
+  if (
+    !isNonEmptyString(times.tzeit) &&
+    !isNonEmptyString(times.tzeit42min) &&
+    !isNonEmptyString(times.tzeit50min) &&
+    !isNonEmptyString(times.tzeit72min)
+  ) {
+    throw new Error("Invalid zmanim response: missing tzeit variant");
+  }
+
   return value;
 };
 
@@ -152,7 +162,7 @@ export interface ZmanimResponse {
     minchaGedola: string;
     plagHaMincha: string;
     sunset: string;
-    tzeit: string;
+    tzeit?: string;
     tzeit42min?: string;
     tzeit50min?: string;
     tzeit72min?: string;
@@ -180,11 +190,9 @@ export const api = {
     const response = await fetch(
       `${API_URL}/weather?city=${encodeURIComponent(city)}`
     );
-
     if (!response.ok) {
       throw new Error(await getErrorMessage(response, "Failed to fetch weather"));
     }
-
     const data = await response.json();
     return ensureWeatherResponse(data);
   },
@@ -196,11 +204,9 @@ export const api = {
     const response = await fetch(
       `${API_URL}/weather?lat=${latitude}&lon=${longitude}`
     );
-
     if (!response.ok) {
       throw new Error(await getErrorMessage(response, "Failed to fetch weather"));
     }
-
     const data = await response.json();
     return ensureWeatherResponse(data);
   },
@@ -212,11 +218,9 @@ export const api = {
     const response = await fetch(
       `${API_URL}/forecast?lat=${latitude}&lon=${longitude}`
     );
-
     if (!response.ok) {
       throw new Error(await getErrorMessage(response, "Failed to fetch forecast"));
     }
-
     const data = await response.json();
     return ensureForecastResponse(data);
   },
@@ -225,24 +229,20 @@ export const api = {
     const response = await fetch(
       `${API_URL}/zmanim?latitude=${latitude}&longitude=${longitude}`
     );
-
     if (!response.ok) {
       throw new Error(await getErrorMessage(response, "Failed to fetch zmanim"));
     }
-
     const data = await response.json();
     return ensureZmanimResponse(data);
   },
 
   async getHebrewDate(): Promise<HebrewDateResponse> {
     const response = await fetch(`${API_URL}/hebrew-date`);
-
     if (!response.ok) {
       throw new Error(
         await getErrorMessage(response, "Failed to fetch Hebrew date")
       );
     }
-
     const data = await response.json();
     return ensureHebrewDateResponse(data);
   },

@@ -14,6 +14,12 @@ const normalizeZmanim = (data: ZmanimPayload) => {
   const rawTimes =
     data?.times && typeof data.times === "object" ? data.times : {};
 
+  const tzeit42min = rawTimes.tzeit42min || "";
+  const tzeit50min = rawTimes.tzeit50min || "";
+  const tzeit72min = rawTimes.tzeit72min || "";
+  const tzeit =
+    rawTimes.tzeit || tzeit42min || tzeit50min || tzeit72min || "";
+
   return {
     ...data,
     times: {
@@ -25,10 +31,10 @@ const normalizeZmanim = (data: ZmanimPayload) => {
       minchaGedola: rawTimes.minchaGedola || "",
       plagHaMincha: rawTimes.plagHaMincha || "",
       sunset: rawTimes.sunset || "",
-      tzeit: rawTimes.tzeit || "",
-      tzeit42min: rawTimes.tzeit42min || "",
-      tzeit50min: rawTimes.tzeit50min || "",
-      tzeit72min: rawTimes.tzeit72min || ""
+      tzeit,
+      tzeit42min,
+      tzeit50min,
+      tzeit72min
     }
   };
 };
