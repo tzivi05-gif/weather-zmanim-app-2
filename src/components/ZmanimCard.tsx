@@ -18,20 +18,32 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   const [tzid, setTzid] = useState("");
   const [hebrewDate, setHebrewDate] = useState("");
 
-  // Load Hebrew date on mount
+  // Load Hebrew date + geolocation on mount
   useEffect(() => {
     fetchHebrewDate();
-  }, []);
 
-  // Update when selectedCity changes
+    if (selectedCity || selectedLocation) return;
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        fetchZmanimByCoords(latitude, longitude);
+      },
+      () => {
+        setError("📍 Location access denied. Enter a city instead.");
+      }
+    );
+  }, [selectedCity, selectedLocation]);
+
+  // When selectedCity changes
   useEffect(() => {
     if (!selectedCity) return;
-    setCity(selectedCity);
     setError(null);
     fetchZmanimByCity(selectedCity);
   }, [selectedCity]);
 
-  // Update when selectedLocation changes (from favorites)
+  // When selectedLocation changes (favorites)
   useEffect(() => {
     if (!selectedLocation?.city) return;
 
@@ -39,12 +51,10 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     const latitude = (selectedLocation as any)?.latitude;
     const longitude = (selectedLocation as any)?.longitude;
 
-    setCity(locCity);
     setError(null);
 
-    // Use coordinates if available, else fallback to city
     if (typeof latitude === "number" && typeof longitude === "number") {
-      fetchZmanimByCoords(latitude, longitude);
+      fetchZmanimByCoords(latitude, longitude, locCity);
     } else {
       fetchZmanimByCity(locCity);
     }
@@ -59,13 +69,18 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     }
   };
 
-  const fetchZmanimByCoords = async (lat: number, lon: number) => {
+  const fetchZmanimByCoords = async (
+    lat: number,
+    lon: number,
+    cityName?: string
+  ) => {
     setLoading(true);
     setError(null);
     try {
       const data = await api.getZmanim(lat, lon);
       setZmanim(data);
       setTzid(data.location?.tzid || "UTC");
+      if (cityName) setCity(cityName);
     } catch (err) {
       console.error("Zmanim fetch by coords failed:", err);
       setZmanim(null);
@@ -85,12 +100,14 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     setError(null);
 
     try {
-      // Get coordinates via Weather API
       const weatherData = await api.getWeather(targetCity);
       const coords = weatherData.coord;
       if (!coords) throw new Error("Coordinates not found for this city.");
 
-      await fetchZmanimByCoords(coords.lat, coords.lon);
+      const data = await api.getZmanim(coords.lat, coords.lon);
+      setZmanim(data);
+      setTzid(data.location?.tzid || "UTC");
+      setCity(targetCity); // ✅ only set after success
     } catch (err) {
       console.error("Zmanim fetch by city failed:", err);
       setZmanim(null);
@@ -169,9 +186,15 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
             <p><strong>Mincha Gedola:</strong> {formatTime(zmanim.times?.minchaGedola)}</p>
             <p><strong>Plag HaMincha:</strong> {formatTime(zmanim.times?.plagHaMincha)}</p>
             <p><strong>Sunset (Shkiah):</strong> {formatTime(zmanim.times?.sunset)}</p>
-            <p><strong>Nightfall (Tzeit):</strong> {formatTime(
-              zmanim.times?.tzeit || zmanim.times?.tzeit42min || zmanim.times?.tzeit50min || zmanim.times?.tzeit72min
-            )}</p>
+            <p>
+              <strong>Nightfall (Tzeit):</strong>{" "}
+              {formatTime(
+                zmanim.times?.tzeit ||
+                  zmanim.times?.tzeit42min ||
+                  zmanim.times?.tzeit50min ||
+                  zmanim.times?.tzeit72min
+              )}
+            </p>
           </>
         )}
       </div>
