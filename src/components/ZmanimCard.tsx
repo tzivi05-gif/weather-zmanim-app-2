@@ -27,28 +27,37 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   const [tzid, setTzid] = useState("");
   const [hebrewDate, setHebrewDate] = useState("");
 
+  // Load Hebrew date + geolocation on mount
   useEffect(() => {
     fetchHebrewDate();
 
+    // Only use geolocation if no favorite/selected city
     if (selectedCity || selectedLocation) return;
     if (!navigator.geolocation) return;
 
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const { latitude, longitude } = pos.coords;
-      fetchZmanimByCoords(latitude, longitude);
-    });
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        await fetchZmanimByCoords(latitude, longitude);
+      },
+      () => {
+        setError("📍 Location access denied. Enter a city instead.");
+      }
+    );
   }, [selectedCity, selectedLocation]);
 
+  // Update when selectedCity changes
   useEffect(() => {
     if (!selectedCity) return;
     setInputCity(selectedCity);
-    fetchZmanimByCity(selectedCity);
+    fetchZmanimByPlace(selectedCity);
   }, [selectedCity]);
 
+  // Update when selectedLocation changes
   useEffect(() => {
     if (!selectedLocation?.city) return;
     setInputCity(selectedLocation.city);
-    fetchZmanimByCity(selectedLocation.city);
+    fetchZmanimByPlace(selectedLocation.city);
   }, [selectedLocation]);
 
   const fetchHebrewDate = async () => {
@@ -60,6 +69,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     }
   };
 
+  // Fetch by coordinates (used for geolocation)
   const fetchZmanimByCoords = async (lat: number, lon: number) => {
     setLoading(true);
     setError(null);
@@ -68,9 +78,17 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
       setZmanim(data);
       setTzid(data.location?.tzid || "UTC");
 
-      // Reverse lookup city name via weather API
-      const weather = await api.getWeatherByCoords(lat, lon);
-      if (weather?.name) setDisplayCity(formatCityName(weather.name));
+      // Reverse geocode coordinates to a readable city using OpenWeatherMap
+      const geoRes = await fetch(
+        `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${process.env.REACT_APP_OPENWEATHER_API_KEY}`
+      );
+      const geoData = await geoRes.json();
+      if (geoData?.length) {
+        const { name, state, country } = geoData[0];
+        const display = [name, state, country].filter(Boolean).join(", ");
+        setDisplayCity(display);
+        setInputCity(display);
+      }
     } catch (err) {
       setZmanim(null);
       setDisplayCity("");
@@ -81,20 +99,34 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     }
   };
 
-  const fetchZmanimByCity = async (cityToFetch?: string) => {
-    const targetCity = (cityToFetch ?? inputCity).trim();
-    if (!targetCity) return;
+  // Fetch by place name (any city, neighborhood, etc.)
+  const fetchZmanimByPlace = async (place: string) => {
+    const targetPlace = place.trim();
+    if (!targetPlace) return;
 
     setLoading(true);
     setError(null);
     try {
-      const weather = await api.getWeather(targetCity);
-      if (!weather.coord) throw new Error("Coordinates not found");
+      // 1️⃣ Geocode using OpenWeatherMap
+      const geoRes = await fetch(
+        `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
+          targetPlace
+        )}&limit=1&appid=${process.env.REACT_APP_OPENWEATHER_API_KEY}`
+      );
+      const geoData = await geoRes.json();
+      if (!geoData?.length) throw new Error("Location not found");
 
-      const data = await api.getZmanim(weather.coord.lat, weather.coord.lon);
+      const { lat, lon, name, state, country } = geoData[0];
+
+      // 2️⃣ Fetch Zmanim by coordinates
+      const data = await api.getZmanim(Number(lat), Number(lon));
       setZmanim(data);
       setTzid(data.location?.tzid || "UTC");
-      setDisplayCity(formatCityName(weather.name || targetCity));
+
+      // 3️⃣ Update display and input
+      const display = [name, state, country].filter(Boolean).join(", ");
+      setDisplayCity(display);
+      setInputCity(display);
     } catch (err) {
       setZmanim(null);
       setDisplayCity("");
@@ -136,8 +168,8 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
               setInputCity(e.target.value);
               setError(null);
             }}
-            onKeyDown={(e) => e.key === "Enter" && fetchZmanimByCity()}
-            placeholder="Enter city"
+            onKeyDown={(e) => e.key === "Enter" && fetchZmanimByPlace(inputCity)}
+            placeholder="Enter city or neighborhood"
             style={{
               backgroundColor: theme.cardBackground,
               color: theme.text,
@@ -145,7 +177,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
             }}
           />
           <button
-            onClick={() => fetchZmanimByCity()}
+            onClick={() => fetchZmanimByPlace(inputCity)}
             disabled={loading}
             style={{
               backgroundColor: theme.zmanimCardBorder,
