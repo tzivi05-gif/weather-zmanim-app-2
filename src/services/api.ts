@@ -1,3 +1,4 @@
+// API base URL: local dev uses proxy, prod can use env override.
 const defaultApiUrl = "/api";
 const envApiUrl = process.env.REACT_APP_API_URL;
 const rawApiUrl =
@@ -18,6 +19,7 @@ const isNonEmptyString = (value: unknown): value is string =>
 const isNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
 
+// Normalize backend error responses into user-friendly text.
 const getErrorMessage = async (
   response: Response,
   fallback: string
@@ -36,6 +38,7 @@ const getErrorMessage = async (
   }
 };
 
+// Runtime response validation keeps UI logic safe.
 const ensureWeatherResponse = (data: unknown): WeatherResponse => {
   const value = data as WeatherResponse;
   if (!value || !isNonEmptyString(value.name)) {
@@ -185,6 +188,7 @@ export interface HealthResponse {
   timestamp?: string;
 }
 
+// All frontend API calls live here.
 export const api = {
   async getWeather(city: string): Promise<WeatherResponse> {
     const response = await fetch(

@@ -9,12 +9,15 @@ import type { Location } from "./types";
 import { api } from "./services/api";
 
 function App() {
+  // Theme comes from context so all cards share the same palette.
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
   const currentTheme = themes[theme];
+  // Single source of truth for the location used by both cards.
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   useEffect(() => {
+    // Quick backend ping so the UI can fail fast if API is down.
     api.getHealth().catch((error) => {
       console.warn("API health check failed", error);
     });
@@ -53,6 +56,7 @@ function App() {
       </header>
 
       <main className="app-main">
+        {/* Favorites drives selectedLocation for both cards. */}
         <FavoriteLocations
           theme={currentTheme}
           onSelectLocation={(location) => setSelectedLocation(location)}

@@ -39,6 +39,7 @@ function FavoriteCitiesPanel({
   useEffect(() => localStorage.setItem(WEATHER_KEY, JSON.stringify(weatherCities)), [weatherCities]);
   useEffect(() => localStorage.setItem(ZMANIM_KEY, JSON.stringify(zmanimCities)), [zmanimCities]);
 
+  // Shared helper: add a city if it isn't a duplicate.
   const addCity = (
     newCity: string,
     cities: string[],
@@ -60,6 +61,7 @@ function FavoriteCitiesPanel({
     setCities: React.Dispatch<React.SetStateAction<string[]>>
   ) => setCities((prev) => prev.filter((c) => c !== cityToRemove));
 
+  // Reusable renderer for both favorites lists.
   const renderList = (
     cities: string[],
     onSelectCity: (city: string) => void,

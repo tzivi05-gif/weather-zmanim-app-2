@@ -32,6 +32,7 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
   }, [selectedCity, selectedLocation]);
 
   useEffect(() => {
+    // Selected city overrides manual input.
     if (!selectedCity) return;
     setCity(selectedCity);
     setError(null);
@@ -58,7 +59,6 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
     const targetCity = (cityToFetch ?? city).trim();
     if (!targetCity) return;
 
-    
     // Prevent flicker: don't set loading if we already have weather for this city
     if (weather?.name?.toLowerCase() === targetCity.toLowerCase()) return;
 
@@ -71,6 +71,7 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
       setCity(data.name || targetCity);
       setForecast([]);
 
+      // Forecast needs coordinates returned from weather.
       if (data.coord) {
         await fetchForecast(data.coord.lat, data.coord.lon);
       }
@@ -111,6 +112,7 @@ function WeatherCard({ theme, selectedCity, selectedLocation }: WeatherCardProps
         setForecast([]);
         return;
       }
+      // Pick noon entries to avoid crowded 3-hour samples.
       const daily = data.list.filter((item) => item.dt_txt.includes("12:00:00"));
       setForecast(daily.slice(0, 5));
     } catch {
