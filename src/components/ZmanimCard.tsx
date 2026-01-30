@@ -50,14 +50,14 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   useEffect(() => {
     if (!selectedCity) return;
     setInputCity(selectedCity);
-    fetchZmanimByPlace(selectedCity);
+    fetchZmanimByCity(selectedCity);
   }, [selectedCity]);
 
   // Update when selectedLocation changes
   useEffect(() => {
     if (!selectedLocation?.city) return;
     setInputCity(selectedLocation.city);
-    fetchZmanimByPlace(selectedLocation.city);
+    fetchZmanimByCity(selectedLocation.city);
   }, [selectedLocation]);
 
   const fetchHebrewDate = async () => {
@@ -69,7 +69,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     }
   };
 
-  // Fetch by coordinates (used for geolocation)
+  // Fetch by coordinates
   const fetchZmanimByCoords = async (lat: number, lon: number) => {
     setLoading(true);
     setError(null);
@@ -78,16 +78,11 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
       setZmanim(data);
       setTzid(data.location?.tzid || "UTC");
 
-      // Reverse geocode coordinates to a readable city using OpenWeatherMap
-      const geoRes = await fetch(
-        `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${process.env.REACT_APP_OPENWEATHER_API_KEY}`
-      );
-      const geoData = await geoRes.json();
-      if (geoData?.length) {
-        const { name, state, country } = geoData[0];
-        const display = [name, state, country].filter(Boolean).join(", ");
-        setDisplayCity(display);
-        setInputCity(display);
+      // Use Weather API to get the city name
+      const weather = await api.getWeatherByCoords(lat, lon);
+      if (weather?.name) {
+        setInputCity(formatCityName(weather.name));
+        setDisplayCity(formatCityName(weather.name));
       }
     } catch (err) {
       setZmanim(null);
@@ -99,34 +94,22 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     }
   };
 
-  // Fetch by place name (any city, neighborhood, etc.)
-  const fetchZmanimByPlace = async (place: string) => {
-    const targetPlace = place.trim();
-    if (!targetPlace) return;
+  // Fetch by city name
+  const fetchZmanimByCity = async (cityToFetch?: string) => {
+    const targetCity = (cityToFetch ?? inputCity).trim();
+    if (!targetCity) return;
 
     setLoading(true);
     setError(null);
     try {
-      // 1️⃣ Geocode using OpenWeatherMap
-      const geoRes = await fetch(
-        `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
-          targetPlace
-        )}&limit=1&appid=${process.env.REACT_APP_OPENWEATHER_API_KEY}`
-      );
-      const geoData = await geoRes.json();
-      if (!geoData?.length) throw new Error("Location not found");
+      const weather = await api.getWeather(targetCity);
+      if (!weather.coord) throw new Error("Coordinates not found");
 
-      const { lat, lon, name, state, country } = geoData[0];
-
-      // 2️⃣ Fetch Zmanim by coordinates
-      const data = await api.getZmanim(Number(lat), Number(lon));
+      const data = await api.getZmanim(weather.coord.lat, weather.coord.lon);
       setZmanim(data);
       setTzid(data.location?.tzid || "UTC");
-
-      // 3️⃣ Update display and input
-      const display = [name, state, country].filter(Boolean).join(", ");
-      setDisplayCity(display);
-      setInputCity(display);
+      setDisplayCity(formatCityName(weather.name || targetCity));
+      setInputCity(formatCityName(weather.name || targetCity));
     } catch (err) {
       setZmanim(null);
       setDisplayCity("");
@@ -168,8 +151,8 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
               setInputCity(e.target.value);
               setError(null);
             }}
-            onKeyDown={(e) => e.key === "Enter" && fetchZmanimByPlace(inputCity)}
-            placeholder="Enter city or neighborhood"
+            onKeyDown={(e) => e.key === "Enter" && fetchZmanimByCity()}
+            placeholder="Enter city"
             style={{
               backgroundColor: theme.cardBackground,
               color: theme.text,
@@ -177,7 +160,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
             }}
           />
           <button
-            onClick={() => fetchZmanimByPlace(inputCity)}
+            onClick={() => fetchZmanimByCity()}
             disabled={loading}
             style={{
               backgroundColor: theme.zmanimCardBorder,
