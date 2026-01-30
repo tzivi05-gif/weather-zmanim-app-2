@@ -11,7 +11,10 @@ type ZmanimCardProps = {
 };
 
 function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) {
-  const [city, setCity] = useState(selectedCity ?? selectedLocation?.city ?? "");
+  const [inputCity, setInputCity] = useState(
+    selectedCity ?? selectedLocation?.city ?? ""
+  );
+  const [displayCity, setDisplayCity] = useState(""); // 👈 what shows in header
   const [zmanim, setZmanim] = useState<ZmanimResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +43,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   useEffect(() => {
     if (!selectedCity) return;
     setError(null);
+    setInputCity(selectedCity);
     fetchZmanimByCity(selectedCity);
   }, [selectedCity]);
 
@@ -52,6 +56,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
     const longitude = (selectedLocation as any)?.longitude;
 
     setError(null);
+    setInputCity(locCity);
 
     if (typeof latitude === "number" && typeof longitude === "number") {
       fetchZmanimByCoords(latitude, longitude, locCity);
@@ -80,7 +85,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
       const data = await api.getZmanim(lat, lon);
       setZmanim(data);
       setTzid(data.location?.tzid || "UTC");
-      if (cityName) setCity(cityName);
+      if (cityName) setDisplayCity(cityName);
     } catch (err) {
       console.error("Zmanim fetch by coords failed:", err);
       setZmanim(null);
@@ -93,7 +98,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
   };
 
   const fetchZmanimByCity = async (cityToFetch?: string) => {
-    const targetCity = (cityToFetch ?? city).trim();
+    const targetCity = (cityToFetch ?? inputCity).trim();
     if (!targetCity) return;
 
     setLoading(true);
@@ -107,7 +112,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
       const data = await api.getZmanim(coords.lat, coords.lon);
       setZmanim(data);
       setTzid(data.location?.tzid || "UTC");
-      setCity(targetCity); // ✅ only set after success
+      setDisplayCity(targetCity); // ✅ only update header after success
     } catch (err) {
       console.error("Zmanim fetch by city failed:", err);
       setZmanim(null);
@@ -146,9 +151,9 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
 
         <div className="input-row">
           <input
-            value={city}
+            value={inputCity}
             onChange={(e) => {
-              setCity(e.target.value);
+              setInputCity(e.target.value);
               setError(null);
             }}
             onKeyDown={(e) => e.key === "Enter" && fetchZmanimByCity()}
@@ -177,7 +182,7 @@ function ZmanimCard({ theme, selectedCity, selectedLocation }: ZmanimCardProps) 
       <div className="right zmanim-list">
         {zmanim && !error && (
           <>
-            <h3>{city}</h3>
+            <h3>{displayCity}</h3>
             <p><strong>Alot Hashachar:</strong> {formatTime(zmanim.times?.alotHaShachar)}</p>
             <p><strong>Sunrise (Netz):</strong> {formatTime(zmanim.times?.sunrise)}</p>
             <p><strong>Latest Shema:</strong> {formatTime(zmanim.times?.sofZmanShma)}</p>
