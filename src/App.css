@@ -92,3 +92,43 @@ body {
     "Segoe UI Symbol",
     "Noto Color Emoji";
 }
+
+.cookie-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+}
+
+.cookie-banner__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+  font-size: 0.95rem;
+}
+
+.cookie-banner__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.cookie-button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cookie-button--primary {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}

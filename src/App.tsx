@@ -7,6 +7,7 @@ import { themes } from "./themes";
 import FavoriteLocations from "./components/FavoriteLocations";
 import type { Location } from "./types";
 import { api } from "./services/api";
+import CookieBanner from "./components/CookieBanner";
 
 function App() {
   // Theme comes from context so all cards share the same palette.
@@ -71,6 +72,7 @@ function App() {
       >
         <p>Built with React ⚛️</p>
       </footer>
+      <CookieBanner theme={currentTheme} />
     </div>
   );
 }
